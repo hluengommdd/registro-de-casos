@@ -1,0 +1,387 @@
+import { NavLink } from 'react-router-dom'
+import {
+  Home,
+  Folder,
+  AlertCircle,
+  CheckCircle,
+  Archive,
+  BarChart3,
+  ChevronLeft,
+  ChevronRight,
+  X,
+  ChevronDown,
+} from 'lucide-react'
+
+import Logo from './Logo'
+import { useEffect, useState } from 'react'
+import { getCases } from '../api/db'
+import { onDataUpdated } from '../utils/refreshBus'
+
+export default function Sidebar({ mobileOpen = false, onClose = () => { } }) {
+  const [collapsed, setCollapsed] = useState(() => {
+    try {
+      const v = localStorage.getItem('sidebar-collapsed')
+      if (v === null) {
+        localStorage.setItem('sidebar-collapsed', 'false')
+        return false
+      }
+      return v === 'true'
+    } catch {
+      return false
+    }
+  })
+  const [expandedSeguimientos, setExpandedSeguimientos] = useState(false)
+  const [casesEnSeguimiento, setCasesEnSeguimiento] = useState([])
+
+  useEffect(() => {
+    try { localStorage.setItem('sidebar-collapsed', collapsed ? 'true' : 'false') } catch {
+      // silently fail
+    }
+  }, [collapsed])
+
+  // Cargar casos en seguimiento
+  useEffect(() => {
+    async function cargarCasosEnSeguimiento() {
+      try {
+        // ✅ Cargar TODOS los casos y filtrar en frontend
+        const todos = await getCases()
+        const enSeguimiento = todos.filter(c => {
+          const estado = (c.fields?.Estado || '').trim().toLowerCase()
+          return estado === 'en seguimiento'
+        })
+
+        // Mapear para obtener el nombre del estudiante
+        const casosFormateados = enSeguimiento.map(caso => {
+          // Estudiante_Responsable es un objeto, extraer nombre
+          const estudianteObj = caso.fields.Estudiante_Responsable
+          let nombre = 'Sin nombre'
+
+          if (typeof estudianteObj === 'object' && estudianteObj !== null) {
+            // Si es objeto, buscar propiedades comunes de nombre
+            nombre = estudianteObj.full_name || estudianteObj.name || estudianteObj.apellidos || 'Sin nombre'
+          } else if (typeof estudianteObj === 'string') {
+            nombre = estudianteObj
+          }
+
+          return {
+            id: caso.id,
+            nombre: nombre,
+          }
+        })
+
+        console.log('📋 Casos en seguimiento cargados:', casosFormateados.length, casosFormateados)
+        setCasesEnSeguimiento(casosFormateados)
+      } catch (e) {
+        console.error('Error cargando casos en seguimiento:', e)
+        setCasesEnSeguimiento([])
+      }
+    }
+    cargarCasosEnSeguimiento()
+
+    // Suscribirse a cambios de datos (cuando se inicia debido proceso)
+    const off = onDataUpdated(() => {
+      console.log('🔄 Refrescando casos en seguimiento del sidebar...')
+      cargarCasosEnSeguimiento()
+    })
+
+    return () => off()
+  }, [])
+
+  const linkClass =
+    'group flex items-center gap-2.5 px-3 py-2 mx-2.5 rounded-xl text-[13px] font-medium transition-all duration-300 relative overflow-hidden'
+
+  const activeClass =
+    'bg-gradient-brand text-white shadow-lg shadow-brand-500/30 ring-1 ring-white/20'
+
+  const inactiveClass =
+    'text-slate-500/80 hover:bg-white/50 hover:text-slate-900 hover:shadow-sm'
+
+  return (
+    <>
+      {/* Desktop sidebar - FLOATING */}
+      <aside
+        className={`hidden sm:flex flex-col m-2.5 mr-0 relative z-20 
+          bg-white/80 backdrop-blur-xl border border-white/40 shadow-glass rounded-3xl 
+          transition-all duration-500 ease-[cubic-bezier(0.25,0.8,0.25,1)]
+          ${collapsed ? 'sidebar-collapsed w-[88px]' : 'w-60'}
+        `}
+      >
+        {/* HEADER CON LOGO */}
+        <div className="p-4 pb-2 flex items-center justify-between relative">
+          <div className={`flex items-center gap-2.5 transition-all duration-300 ${collapsed ? 'opacity-0 absolute pointer-events-none translate-x-[-10px]' : 'opacity-100'}`}>
+            <div className="relative">
+              <div className="absolute inset-0 bg-brand-500 blur-lg opacity-20 rounded-full"></div>
+              <Logo size={40} className="relative z-10" />
+            </div>
+            <div>
+              <h1 className="text-base font-black text-slate-800 tracking-tight leading-none">
+                Convivencia
+              </h1>
+              <p className="text-[9px] font-bold text-brand-500 tracking-widest uppercase mt-0.5">
+                Escolar
+              </p>
+            </div>
+          </div>
+
+          <button
+            aria-label={collapsed ? 'Expandir sidebar' : 'Colapsar sidebar'}
+            onClick={() => setCollapsed(s => !s)}
+            className={`
+              relative z-30 p-1.5 rounded-lg bg-white/50 hover:bg-white text-slate-400 hover:text-brand-600 
+              transition-all shadow-sm border border-slate-100 hover:border-brand-200 
+              hover:scale-110 active:scale-95
+              ${collapsed ? 'mx-auto' : ''}
+            `}
+          >
+            {collapsed ? <ChevronRight size={16} strokeWidth={3} /> : <ChevronLeft size={16} strokeWidth={3} />}
+          </button>
+        </div>
+
+        {/* NAV */}
+        <nav className="flex-1 py-2.5 space-y-0.5 overflow-y-auto no-scrollbar">
+          <p className={`px-6 text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 transition-opacity ${collapsed ? 'hidden' : 'block'}`}>
+            Menu
+          </p>
+
+          <NavLink to="/" end className={({ isActive }) =>
+            `${linkClass} ${isActive ? activeClass : inactiveClass}`
+          }>
+            {({ isActive }) => (
+              <>
+                <Home size={18} className={`transition-transform duration-300 ${isActive ? 'scale-110' : 'group-hover:scale-105'}`} />
+                <span className={`sidebar-label whitespace-nowrap transition-all duration-300 ${collapsed ? 'w-0 opacity-0 overflow-hidden' : 'w-auto opacity-100'}`}>
+                  Inicio
+                </span>
+                {isActive && <div className="absolute inset-0 bg-white/10 animate-pulse pointer-events-none" />}
+              </>
+            )}
+          </NavLink>
+
+          <NavLink to="/casos-activos" className={({ isActive }) =>
+            `${linkClass} ${isActive ? activeClass : inactiveClass}`
+          }>
+            <Folder size={18} className="transition-transform group-hover:scale-105" />
+            <span className={`sidebar-label whitespace-nowrap transition-all duration-300 ${collapsed ? 'w-0 opacity-0 overflow-hidden delay-0' : 'w-auto opacity-100 delay-100'}`}>
+              Casos Activos
+            </span>
+          </NavLink>
+
+          {/* Seguimientos con submenu */}
+          <div className="flex flex-col gap-1 my-1">
+            <button
+              onClick={() => !collapsed && setExpandedSeguimientos(!expandedSeguimientos)}
+              className={`
+                group flex items-center gap-3 px-4 py-3 mx-3 rounded-xl text-sm font-medium transition-all duration-200
+                ${expandedSeguimientos ? 'bg-slate-50 text-slate-900 border border-slate-100/50' : 'text-slate-500/80 hover:bg-white/50 hover:text-slate-900'}
+                ${collapsed ? 'justify-center' : 'justify-between'}
+              `}
+            >
+              <span className="flex items-center gap-3">
+                <CheckCircle size={18} className={`transition-colors ${expandedSeguimientos ? 'text-brand-500' : ''}`} />
+                <span className={`sidebar-label whitespace-nowrap transition-all duration-300 ${collapsed ? 'w-0 opacity-0 overflow-hidden' : 'w-auto opacity-100'}`}>
+                  Seguimientos
+                </span>
+              </span>
+              {!collapsed && (
+                <ChevronDown
+                  size={16}
+                  className={`transition-transform duration-300 text-slate-400 ${expandedSeguimientos ? 'rotate-180' : ''}`}
+                />
+              )}
+            </button>
+
+            {expandedSeguimientos && !collapsed && (
+              <div className="ml-7 mr-3 mt-1 space-y-1 pl-3 border-l-2 border-slate-100">
+                {casesEnSeguimiento.length > 0 ? (
+                  casesEnSeguimiento.map(caso => (
+                    <NavLink
+                      key={caso.id}
+                      to={`/seguimientos?caso=${caso.id}`}
+                      className={({ isActive }) =>
+                        `flex items-center gap-2 px-3 py-2 text-xs rounded-lg transition-all ${isActive
+                          ? 'bg-brand-50/80 text-brand-700 font-bold shadow-sm'
+                          : 'text-slate-500 hover:text-slate-800 hover:bg-white/60'
+                        }`
+                      }
+                    >
+                      {({ isActive }) => (
+                        <>
+                          <div className={`w-1.5 h-1.5 rounded-full ${isActive ? 'bg-brand-500' : 'bg-slate-300'}`}></div>
+                          <span className="truncate">{caso.nombre}</span>
+                        </>
+                      )}
+                    </NavLink>
+                  ))
+                ) : (
+                  <div className="text-xs text-gray-400 px-3 py-2 italic opacity-60">
+                    Sin casos activos
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+
+          <NavLink to="/casos-cerrados" className={({ isActive }) =>
+            `${linkClass} ${isActive ? activeClass : inactiveClass}`
+          }>
+            <Archive size={18} className="transition-transform group-hover:scale-105" />
+            <span className={`sidebar-label whitespace-nowrap transition-all duration-300 ${collapsed ? 'w-0 opacity-0 overflow-hidden' : 'w-auto opacity-100'}`}>
+              Casos Cerrados
+            </span>
+          </NavLink>
+
+          <NavLink to="/estadisticas" className={({ isActive }) =>
+            `${linkClass} ${isActive ? activeClass : inactiveClass}`
+          }>
+            <BarChart3 size={18} className="transition-transform group-hover:scale-105" />
+            <span className={`sidebar-label whitespace-nowrap transition-all duration-300 ${collapsed ? 'w-0 opacity-0 overflow-hidden' : 'w-auto opacity-100'}`}>
+              Estadísticas
+            </span>
+          </NavLink>
+
+          <div className="pt-4 mt-2 border-t border-slate-100 mx-4">
+            <p className={`text-xs font-bold text-slate-400 uppercase tracking-widest mb-2 transition-opacity ${collapsed ? 'hidden' : 'block'}`}>
+              Gestión
+            </p>
+            <NavLink to="/alertas" className={({ isActive }) =>
+              `flex items-center gap-3 px-4 py-3 -mx-1 rounded-xl text-sm font-medium transition-all duration-300 relative overflow-hidden ${isActive ? 'bg-red-50 text-red-700 ring-1 ring-red-100' : 'text-slate-500 hover:bg-red-50/50 hover:text-red-700'}`
+            }>
+              {({ isActive }) => (
+                <>
+                  <AlertCircle size={18} className={isActive ? "text-red-600" : "text-slate-400 group-hover:text-red-500"} />
+                  <span className={`flex-1 transition-all duration-300 ${collapsed ? 'w-0 opacity-0 overflow-hidden' : 'w-auto opacity-100'}`}>
+                    Alertas
+                  </span>
+                  {!collapsed && (
+                    <span className="bg-red-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow-lg shadow-red-500/30 animate-pulse">
+                      LIVE
+                    </span>
+                  )}
+                </>
+              )}
+            </NavLink>
+          </div>
+
+        </nav>
+
+        {/* User Footer */}
+        <div className="p-4 mt-auto">
+          <div className={`p-3 rounded-2xl bg-gradient-to-br from-slate-50 to-white border border-white/60 shadow-sm flex items-center gap-3 transition-opacity duration-300 ${collapsed ? 'opacity-0 hidden' : 'opacity-100'}`}>
+            <div className="w-8 h-8 rounded-full bg-slate-200 flex items-center justify-center text-xs font-bold text-slate-500">
+              U
+            </div>
+            <div className="overflow-hidden">
+              <p className="text-xs font-bold text-slate-700 truncate">Usuario Sistema</p>
+              <p className="text-[10px] text-slate-400 truncate">Convivencia</p>
+            </div>
+          </div>
+        </div>
+      </aside>
+
+      {/* Mobile sidebar (overlay) */}
+      {mobileOpen && (
+        <div className="fixed inset-0 z-50 flex sm:hidden">
+          <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity" onClick={onClose} />
+          <aside className="relative w-72 bg-white h-full shadow-2xl flex flex-col overflow-hidden">
+            {/* Mobile Header */}
+            <div className="flex items-center justify-between p-4 border-b border-slate-100">
+              <div className="flex items-center gap-3">
+                <div className="relative">
+                  <div className="absolute inset-0 bg-brand-500 blur-lg opacity-20 rounded-full"></div>
+                  <Logo size={32} className="relative z-10" />
+                </div>
+                <div>
+                  <h1 className="text-sm font-black text-slate-800 tracking-tight leading-none">Convivencia</h1>
+                  <p className="text-[8px] font-bold text-brand-500 tracking-widest uppercase mt-0.5">Escolar</p>
+                </div>
+              </div>
+              <button onClick={onClose} className="p-2 rounded-full hover:bg-slate-100 text-slate-400">
+                <X size={20} />
+              </button>
+            </div>
+
+            {/* Mobile Nav Content */}
+            <nav className="flex-1 py-4 space-y-1 overflow-y-auto no-scrollbar">
+              <p className="px-6 text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">Menu</p>
+
+              <NavLink to="/" end className={({ isActive }) => `${linkClass} mx-4 ${isActive ? activeClass : inactiveClass}`} onClick={onClose}>
+                <Home size={18} />
+                <span>Inicio</span>
+              </NavLink>
+
+              <NavLink to="/casos-activos" className={({ isActive }) => `${linkClass} mx-4 ${isActive ? activeClass : inactiveClass}`} onClick={onClose}>
+                <Folder size={18} />
+                <span>Casos Activos</span>
+              </NavLink>
+
+              {/* Submenu Seguimientos en Móvil */}
+              <div className="flex flex-col gap-1 my-1 px-4">
+                <button
+                  onClick={() => setExpandedSeguimientos(!expandedSeguimientos)}
+                  className={`flex items-center justify-between w-full px-3 py-2 rounded-xl text-[13px] font-medium transition-all ${expandedSeguimientos ? 'bg-slate-50 text-slate-900 border border-slate-100/50' : 'text-slate-500/80 hover:bg-slate-50'}`}
+                >
+                  <span className="flex items-center gap-2.5">
+                    <CheckCircle size={18} className={expandedSeguimientos ? 'text-brand-500' : ''} />
+                    <span>Seguimientos</span>
+                  </span>
+                  <ChevronDown size={16} className={`transition-transform duration-300 text-slate-400 ${expandedSeguimientos ? 'rotate-180' : ''}`} />
+                </button>
+
+                {expandedSeguimientos && (
+                  <div className="ml-5 mt-1 space-y-1 pl-3 border-l-2 border-slate-100">
+                    {casesEnSeguimiento.length > 0 ? (
+                      casesEnSeguimiento.map(caso => (
+                        <NavLink
+                          key={caso.id}
+                          to={`/seguimientos?caso=${caso.id}`}
+                          onClick={onClose}
+                          className={({ isActive }) => `flex items-center gap-2 px-3 py-2 text-xs rounded-lg transition-all ${isActive ? 'bg-brand-50/80 text-brand-700 font-bold' : 'text-slate-500 hover:text-slate-800 hover:bg-slate-50'}`}
+                        >
+                          <div className={`w-1.5 h-1.5 rounded-full ${isActive ? 'bg-brand-500' : 'bg-slate-300'}`}></div>
+                          <span className="truncate">{caso.nombre}</span>
+                        </NavLink>
+                      ))
+                    ) : (
+                      <div className="text-[10px] text-slate-400 px-3 py-2 italic">Sin casos activos</div>
+                    )}
+                  </div>
+                )}
+              </div>
+
+              <NavLink to="/casos-cerrados" className={({ isActive }) => `${linkClass} mx-4 ${isActive ? activeClass : inactiveClass}`} onClick={onClose}>
+                <Archive size={18} />
+                <span>Casos Cerrados</span>
+              </NavLink>
+
+              <NavLink to="/estadisticas" className={({ isActive }) => `${linkClass} mx-4 ${isActive ? activeClass : inactiveClass}`} onClick={onClose}>
+                <BarChart3 size={18} />
+                <span>Estadísticas</span>
+              </NavLink>
+
+              {/* Gestión */}
+              <div className="pt-4 mt-2 border-t border-slate-100 mx-5">
+                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">Gestión</p>
+                <NavLink to="/alertas" className={({ isActive }) => `flex items-center gap-3 px-3 py-2 rounded-xl text-[13px] font-medium transition-all ${isActive ? 'bg-red-50 text-red-700 ring-1 ring-red-100' : 'text-slate-500 hover:bg-red-50/50'}`} onClick={onClose}>
+                  <AlertCircle size={18} className="text-red-500" />
+                  <span className="flex-1">Alertas</span>
+                  <span className="bg-red-500 text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full">LIVE</span>
+                </NavLink>
+              </div>
+            </nav>
+
+            {/* User Footer Mobile */}
+            <div className="p-4 mt-auto border-t border-slate-50 bg-slate-50/30">
+              <div className="flex items-center gap-3 p-2">
+                <div className="w-8 h-8 rounded-full bg-slate-200 flex items-center justify-center text-xs font-bold text-slate-500">U</div>
+                <div>
+                  <p className="text-[11px] font-bold text-slate-700 leading-none">Usuario Sistema</p>
+                  <p className="text-[9px] text-slate-400 mt-1">Convivencia Escolar</p>
+                </div>
+              </div>
+            </div>
+          </aside>
+        </div>
+      )}
+    </>
+  )
+}

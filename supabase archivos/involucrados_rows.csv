@@ -1,0 +1,7 @@
+id,caso_id,nombre,rol,contacto,metadata,created_at
+2cf50b2d-e449-4269-b188-abde490f9a8d,b0fe617f-44d2-40e5-9d1b-0dd70656ecf8,AMANDA DANIELA OLIVA FUENTES,Afectado,,"{""curso"":""5A BASICO""}",2026-01-12 03:24:19.518627+00
+a61a499b-08dc-4d9f-a3e9-71fb25aa8f08,1fde4422-88f9-4668-a8e6-dcc4d16440c6,ALONSO ANTONIO GÓMEZ AVENDAÑO,Afectado,,"{""curso"":""5A BASICO""}",2026-01-15 21:00:53.80801+00
+a835ace9-d8fe-4a3a-80e2-bc41af7ae293,1fde4422-88f9-4668-a8e6-dcc4d16440c6,RENATA IGNACIA OLIVARES PULGAR,Testigo,,"{""curso"":""5A BASICO""}",2026-01-15 21:00:53.835837+00
+c0c21be1-006e-46e3-b8ba-83fb9c56e23d,fcbc4045-a06e-41e7-8904-c07ee1526ae8,Milton Freidman,Agresor,,,2026-01-09 16:03:23.573217+00
+cd146e39-2529-4c4d-9cb3-3fe263dd142b,0e30bf52-d2f6-4789-a463-c24c9e25892e,Juan Pérez,Afectado,,,2026-01-09 15:57:26.430535+00
+fbd0a336-a864-4883-a818-5fc4c981b908,fcbc4045-a06e-41e7-8904-c07ee1526ae8,Luis Maldonado,Agresor,,,2026-01-09 16:03:23.586762+00
