@@ -337,8 +337,12 @@ export default function Sidebar({ mobileOpen = false, onClose = () => { } }) {
                           onClick={onClose}
                           className={({ isActive }) => `flex items-center gap-2 px-3 py-2 text-xs rounded-lg transition-all ${isActive ? 'bg-brand-50/80 text-brand-700 font-bold' : 'text-slate-500 hover:text-slate-800 hover:bg-slate-50'}`}
                         >
-                          <div className={`w-1.5 h-1.5 rounded-full ${isActive ? 'bg-brand-500' : 'bg-slate-300'}`}></div>
-                          <span className="truncate">{caso.nombre}</span>
+                          {({ isActive }) => (
+                            <>
+                              <div className={`w-1.5 h-1.5 rounded-full ${isActive ? 'bg-brand-500' : 'bg-slate-300'}`}></div>
+                              <span className="truncate">{caso.nombre}</span>
+                            </>
+                          )}
                         </NavLink>
                       ))
                     ) : (
