@@ -108,7 +108,7 @@ export default function Sidebar({ mobileOpen = false, onClose = () => { } }) {
       >
         {/* HEADER CON LOGO */}
         <div className="p-4 pb-2 flex items-center justify-between relative">
-          <div className={`flex items-center gap-2.5 transition-all duration-300 ${collapsed ? 'opacity-0 absolute pointer-events-none translate-x-[-10px]' : 'opacity-100'}`}>
+          <div className={`flex items-center gap-2.5 transition-all duration-300 ${collapsed ? 'opacity-0 absolute pointer-events-none translate-x-[-10px]' : 'opacity-100'}`}> 
             <div className="relative">
               <div className="absolute inset-0 bg-brand-500 blur-lg opacity-20 rounded-full"></div>
               <Logo size={40} className="relative z-10" />
@@ -139,29 +139,24 @@ export default function Sidebar({ mobileOpen = false, onClose = () => { } }) {
 
         {/* NAV */}
         <nav className="flex-1 py-2.5 space-y-0.5 overflow-y-auto no-scrollbar">
-          <p className={`px-6 text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 transition-opacity ${collapsed ? 'hidden' : 'block'}`}>
+          <p className={`px-6 text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 transition-opacity ${collapsed ? 'hidden' : 'block'}`}> 
             Menu
           </p>
 
           <NavLink to="/" end className={({ isActive }) =>
             `${linkClass} ${isActive ? activeClass : inactiveClass}`
           }>
-            {({ isActive }) => (
-              <>
-                <Home size={18} className={`transition-transform duration-300 ${isActive ? 'scale-110' : 'group-hover:scale-105'}`} />
-                <span className={`sidebar-label whitespace-nowrap transition-all duration-300 ${collapsed ? 'w-0 opacity-0 overflow-hidden' : 'w-auto opacity-100'}`}>
-                  Inicio
-                </span>
-                {isActive && <div className="absolute inset-0 bg-white/10 animate-pulse pointer-events-none" />}
-              </>
-            )}
+            <Home size={18} className="transition-transform duration-300 group-hover:scale-105" />
+            <span className={`sidebar-label whitespace-nowrap transition-all duration-300 ${collapsed ? 'w-0 opacity-0 overflow-hidden' : 'w-auto opacity-100'}`}> 
+              Inicio
+            </span>
           </NavLink>
 
           <NavLink to="/casos-activos" className={({ isActive }) =>
             `${linkClass} ${isActive ? activeClass : inactiveClass}`
           }>
             <Folder size={18} className="transition-transform group-hover:scale-105" />
-            <span className={`sidebar-label whitespace-nowrap transition-all duration-300 ${collapsed ? 'w-0 opacity-0 overflow-hidden delay-0' : 'w-auto opacity-100 delay-100'}`}>
+            <span className={`sidebar-label whitespace-nowrap transition-all duration-300 ${collapsed ? 'w-0 opacity-0 overflow-hidden delay-0' : 'w-auto opacity-100 delay-100'}`}> 
               Casos Activos
             </span>
           </NavLink>
@@ -178,7 +173,7 @@ export default function Sidebar({ mobileOpen = false, onClose = () => { } }) {
             >
               <span className="flex items-center gap-3">
                 <CheckCircle size={18} className={`transition-colors ${expandedSeguimientos ? 'text-brand-500' : ''}`} />
-                <span className={`sidebar-label whitespace-nowrap transition-all duration-300 ${collapsed ? 'w-0 opacity-0 overflow-hidden' : 'w-auto opacity-100'}`}>
+                <span className={`sidebar-label whitespace-nowrap transition-all duration-300 ${collapsed ? 'w-0 opacity-0 overflow-hidden' : 'w-auto opacity-100'}`}> 
                   Seguimientos
                 </span>
               </span>
@@ -204,12 +199,8 @@ export default function Sidebar({ mobileOpen = false, onClose = () => { } }) {
                         }`
                       }
                     >
-                      {({ isActive }) => (
-                        <>
-                          <div className={`w-1.5 h-1.5 rounded-full ${isActive ? 'bg-brand-500' : 'bg-slate-300'}`}></div>
-                          <span className="truncate">{caso.nombre}</span>
-                        </>
-                      )}
+                      <div className="w-1.5 h-1.5 rounded-full bg-slate-300"></div>
+                      <span className="truncate">{caso.nombre}</span>
                     </NavLink>
                   ))
                 ) : (
@@ -225,7 +216,7 @@ export default function Sidebar({ mobileOpen = false, onClose = () => { } }) {
             `${linkClass} ${isActive ? activeClass : inactiveClass}`
           }>
             <Archive size={18} className="transition-transform group-hover:scale-105" />
-            <span className={`sidebar-label whitespace-nowrap transition-all duration-300 ${collapsed ? 'w-0 opacity-0 overflow-hidden' : 'w-auto opacity-100'}`}>
+            <span className={`sidebar-label whitespace-nowrap transition-all duration-300 ${collapsed ? 'w-0 opacity-0 overflow-hidden' : 'w-auto opacity-100'}`}> 
               Casos Cerrados
             </span>
           </NavLink>
@@ -234,30 +225,26 @@ export default function Sidebar({ mobileOpen = false, onClose = () => { } }) {
             `${linkClass} ${isActive ? activeClass : inactiveClass}`
           }>
             <BarChart3 size={18} className="transition-transform group-hover:scale-105" />
-            <span className={`sidebar-label whitespace-nowrap transition-all duration-300 ${collapsed ? 'w-0 opacity-0 overflow-hidden' : 'w-auto opacity-100'}`}>
+            <span className={`sidebar-label whitespace-nowrap transition-all duration-300 ${collapsed ? 'w-0 opacity-0 overflow-hidden' : 'w-auto opacity-100'}`}> 
               Estadísticas
             </span>
           </NavLink>
 
           <div className="pt-4 mt-2 border-t border-slate-100 mx-4">
-            <p className={`text-xs font-bold text-slate-400 uppercase tracking-widest mb-2 transition-opacity ${collapsed ? 'hidden' : 'block'}`}>
+            <p className={`text-xs font-bold text-slate-400 uppercase tracking-widest mb-2 transition-opacity ${collapsed ? 'hidden' : 'block'}`}> 
               Gestión
             </p>
             <NavLink to="/alertas" className={({ isActive }) =>
               `flex items-center gap-3 px-4 py-3 -mx-1 rounded-xl text-sm font-medium transition-all duration-300 relative overflow-hidden ${isActive ? 'bg-red-50 text-red-700 ring-1 ring-red-100' : 'text-slate-500 hover:bg-red-50/50 hover:text-red-700'}`
             }>
-              {({ isActive }) => (
-                <>
-                  <AlertCircle size={18} className={isActive ? "text-red-600" : "text-slate-400 group-hover:text-red-500"} />
-                  <span className={`flex-1 transition-all duration-300 ${collapsed ? 'w-0 opacity-0 overflow-hidden' : 'w-auto opacity-100'}`}>
-                    Alertas
-                  </span>
-                  {!collapsed && (
-                    <span className="bg-red-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow-lg shadow-red-500/30 animate-pulse">
-                      LIVE
-                    </span>
-                  )}
-                </>
+              <AlertCircle size={18} className="text-red-500" />
+              <span className={`flex-1 transition-all duration-300 ${collapsed ? 'w-0 opacity-0 overflow-hidden' : 'w-auto opacity-100'}`}> 
+                Alertas
+              </span>
+              {!collapsed && (
+                <span className="bg-red-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow-lg shadow-red-500/30 animate-pulse">
+                  LIVE
+                </span>
               )}
             </NavLink>
           </div>
@@ -266,7 +253,7 @@ export default function Sidebar({ mobileOpen = false, onClose = () => { } }) {
 
         {/* User Footer */}
         <div className="p-4 mt-auto">
-          <div className={`p-3 rounded-2xl bg-gradient-to-br from-slate-50 to-white border border-white/60 shadow-sm flex items-center gap-3 transition-opacity duration-300 ${collapsed ? 'opacity-0 hidden' : 'opacity-100'}`}>
+          <div className={`p-3 rounded-2xl bg-gradient-to-br from-slate-50 to-white border border-white/60 shadow-sm flex items-center gap-3 transition-opacity duration-300 ${collapsed ? 'opacity-0' : 'opacity-100'}`}> 
             <div className="w-8 h-8 rounded-full bg-slate-200 flex items-center justify-center text-xs font-bold text-slate-500">
               U
             </div>
@@ -318,7 +305,7 @@ export default function Sidebar({ mobileOpen = false, onClose = () => { } }) {
               <div className="flex flex-col gap-1 my-1 px-4">
                 <button
                   onClick={() => setExpandedSeguimientos(!expandedSeguimientos)}
-                  className={`flex items-center justify-between w-full px-3 py-2 rounded-xl text-[13px] font-medium transition-all ${expandedSeguimientos ? 'bg-slate-50 text-slate-900 border border-slate-100/50' : 'text-slate-500/80 hover:bg-slate-50'}`}
+                  className={`flex items-center justify-between w-full px-3 py-2 rounded-xl text-[13px] font-medium transition-all ${expandedSeguimientos ? 'bg-slate-50 text-slate-900 border border-slate-100/50' : 'text-slate-500/80 hover:bg-white/50 hover:text-slate-900'}`}
                 >
                   <span className="flex items-center gap-2.5">
                     <CheckCircle size={18} className={expandedSeguimientos ? 'text-brand-500' : ''} />
@@ -335,9 +322,9 @@ export default function Sidebar({ mobileOpen = false, onClose = () => { } }) {
                           key={caso.id}
                           to={`/seguimientos?caso=${caso.id}`}
                           onClick={onClose}
-                          className={({ isActive }) => `flex items-center gap-2 px-3 py-2 text-xs rounded-lg transition-all ${isActive ? 'bg-brand-50/80 text-brand-700 font-bold' : 'text-slate-500 hover:text-slate-800 hover:bg-slate-50'}`}
+                          className={({ isActive }) => `flex items-center gap-2 px-3 py-2 text-xs rounded-lg transition-all ${isActive ? 'bg-brand-50/80 text-brand-700 font-bold' : 'text-slate-500 hover:text-slate-800 hover:bg-white/60'}`}
                         >
-                          <div className={`w-1.5 h-1.5 rounded-full ${isActive ? 'bg-brand-500' : 'bg-slate-300'}`}></div>
+                          <div className="w-1.5 h-1.5 rounded-full bg-slate-300"></div>
                           <span className="truncate">{caso.nombre}</span>
                         </NavLink>
                       ))
@@ -361,7 +348,7 @@ export default function Sidebar({ mobileOpen = false, onClose = () => { } }) {
               {/* Gestión */}
               <div className="pt-4 mt-2 border-t border-slate-100 mx-5">
                 <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">Gestión</p>
-                <NavLink to="/alertas" className={({ isActive }) => `flex items-center gap-3 px-3 py-2 rounded-xl text-[13px] font-medium transition-all ${isActive ? 'bg-red-50 text-red-700 ring-1 ring-red-100' : 'text-slate-500 hover:bg-red-50/50'}`} onClick={onClose}>
+                <NavLink to="/alertas" className={({ isActive }) => `flex items-center gap-3 px-3 py-2 rounded-xl text-[13px] font-medium transition-all ${isActive ? 'bg-red-50 text-red-700 ring-1 ring-red-100' : 'text-slate-500 hover:bg-red-50/50 hover:text-red-700'}`} onClick={onClose}>
                   <AlertCircle size={18} className="text-red-500" />
                   <span className="flex-1">Alertas</span>
                   <span className="bg-red-500 text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full">LIVE</span>
