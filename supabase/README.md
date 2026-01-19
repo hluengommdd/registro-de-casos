@@ -14,6 +14,7 @@ supabase/
 │   ├── 04_functions.sql
 │   ├── 05_triggers.sql
 │   ├── 06_rls_policies.sql
+│   ├── 07_views.sql
 │   └── README.md
 └── README.md            # Este archivo
 ```
@@ -45,7 +46,7 @@ Elige uno de estos métodos:
 1. Abre tu proyecto en Supabase Dashboard
 2. Ve a **SQL Editor** en el menú lateral
 3. Crea una nueva query
-4. Copia y ejecuta cada archivo SQL **en orden** (00 → 06)
+4. Copia y ejecuta cada archivo SQL **en orden** (00 → 07)
 5. Verifica que no haya errores entre cada ejecución
 
 #### Método B: Supabase CLI (Más Profesional)
@@ -98,6 +99,15 @@ VITE_SUPABASE_ANON_KEY=tu-anon-key
 | `followup_evidence` | Metadatos de archivos de evidencia |
 | `involucrados` | Personas involucradas en los casos |
 | `stage_sla` | Plazos (SLA) para etapas del debido proceso |
+| `feriados` | Calendario de feriados (para días hábiles) |
+
+### Vistas
+
+| Vista | Descripción |
+|-------|-------------|
+| `v_control_plazos_plus` | Control de plazos por seguimiento |
+| `v_control_alertas` | Alertas de indagación urgente |
+| `v_control_plazos_case_resumen` | Resumen de plazo más urgente por caso |
 
 ### Funciones RPC Disponibles
 
@@ -119,6 +129,8 @@ Después de ejecutar las migraciones, verifica:
 
 ### Estructura
 - [ ] Todas las 6 tablas fueron creadas
+- [ ] La tabla de feriados fue creada
+- [ ] Las 3 vistas fueron creadas
 - [ ] Las claves foráneas están activas
 - [ ] Los índices fueron creados correctamente
 
@@ -153,6 +165,10 @@ RETURNING *;
 
 -- 3. Verificar funciones RPC
 SELECT * FROM stats_kpis('2024-01-01', '2024-12-31');
+
+-- 4. Verificar vistas
+SELECT * FROM v_control_plazos_plus LIMIT 5;
+SELECT * FROM v_control_alertas LIMIT 5;
 ```
 
 ## 🔐 Seguridad y Permisos

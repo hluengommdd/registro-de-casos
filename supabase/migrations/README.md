@@ -13,6 +13,7 @@ Las migraciones deben ejecutarse en el siguiente orden:
 5. **04_functions.sql** - Funciones RPC para estadísticas
 6. **05_triggers.sql** - Triggers para campos automáticos
 7. **06_rls_policies.sql** - Políticas de Row Level Security
+8. **07_views.sql** - Vistas para consultas complejas (control de plazos y alertas)
 
 ## 🚀 Cómo Usar en un Nuevo Proyecto
 
@@ -21,7 +22,7 @@ Las migraciones deben ejecutarse en el siguiente orden:
 1. Abre tu proyecto en [Supabase Dashboard](https://app.supabase.com/)
 2. Ve a **SQL Editor**
 3. Crea una nueva query
-4. Copia el contenido de cada archivo **en orden** (00 → 06)
+4. Copia el contenido de cada archivo **en orden** (00 → 07)
 5. Ejecuta cada migración haciendo clic en **RUN**
 6. Verifica que no haya errores antes de continuar con la siguiente
 
@@ -57,6 +58,7 @@ psql "postgresql://postgres:[TU-PASSWORD]@db.[TU-PROYECTO].supabase.co:5432/post
 \i 04_functions.sql
 \i 05_triggers.sql
 \i 06_rls_policies.sql
+\i 07_views.sql
 ```
 
 ## 📦 Estructura de Tablas Creadas
@@ -69,6 +71,13 @@ psql "postgresql://postgres:[TU-PASSWORD]@db.[TU-PROYECTO].supabase.co:5432/post
 - **followup_evidence** - Metadatos de evidencias (archivos)
 - **involucrados** - Personas involucradas en los casos
 - **stage_sla** - Plazos (SLA) para etapas del debido proceso
+- **feriados** - Calendario de feriados para cálculo de días hábiles (opcional)
+
+### Vistas
+
+- **v_control_plazos_plus** - Control de plazos por seguimiento con alertas
+- **v_control_alertas** - Alertas de indagación urgente
+- **v_control_plazos_case_resumen** - Resumen de plazo más urgente por caso
 
 ## 🪣 Configuración de Storage Buckets
 
