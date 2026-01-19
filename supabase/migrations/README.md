@@ -1,68 +1,60 @@
-# Database Migrations
+# Supabase Migrations Documentation
 
-## File Structure
+## Migration Structure
 
-1. `######_initial_migration.sql`
-2. `######_add_new_table.sql`
-3. `######_update_existing_table.sql`
-4. `######_drop_table.sql`
-5. `######_add_index.sql`
-6. `######_alter_column.sql`
-7. `######_add_foreign_key.sql`
-8. `######_create_view.sql`
-9. `######_rpc_function.sql`
+Migrations are organized into directories by date, following the format YYYY-MM-DD. Each migration contains SQL scripts that are responsible for modifying the database schema.
 
 ## Execution Order
-Ensure the migrations are executed in the order listed above. Failure to do so may cause issues with dependencies.
 
-## Methods to Run Migrations
-1. **Supabase Dashboard:**
-   - Go to the Migrations section and upload the migration files in the specified order.
-2. **CLI:**
-   - Use the Supabase CLI and run `supabase db push` command.
-3. **PostgreSQL Script:**
-   - Run the SQL files directly in your PostgreSQL client.
+Migrations are executed in chronological order. The migration system will apply all the migrations from the oldest to the newest, ensuring that your database is up-to-date with the latest schema changes.
 
-## Data Structure
-### Database Tables
-| Table Name     | Description             |
-|----------------|-------------------------|
-| `table_name_1` | Description of table 1  |
-| `table_name_2` | Description of table 2  |
-| ...            | ...                     |
+## Table Descriptions
 
-### Views
-| View Name      | Description             |
-|----------------|-------------------------|
-| `view_name_1`  | Description of view 1   |
-| `view_name_2`  | Description of view 2   |
-| ...            | ...                     |
+### Users Table
+- **id**: Unique identifier for each user (UUID)
+- **username**: Unique name for the user (String)
+- **email**: User's email address (String)
 
-### RPC Functions
-| Function Name   | Description             |
-|----------------|-------------------------|
-| `function_name_1` | Description of function 1 |
-| `function_name_2` | Description of function 2 |
-| ...            | ...                     |
+### Cases Table
+- **id**: Unique identifier for each case (UUID)
+- **title**: Title of the case (String)
+- **description**: Description of the case (Text)
 
-## Additional Configuration Steps for Storage Bucket
-- Ensure that you have configured the bucket with proper permissions.
-- Set up any necessary environment variables.
+## Views
 
-## Verification SQL Queries
-- Run the following queries to verify the integrity and existence of your tables, views, and functions:
-  ```sql
-  SELECT * FROM information_schema.tables;
-  SELECT * FROM information_schema.views;
-  ```
+Views are virtual tables defined by a query. They can be used to simplify complex queries.
 
-## Important Notes
-- Always make backups before running migrations.
-- Ensure proper permissions are set for each table and function.
-- Test migrations in a staging environment before running in production.
+### active_cases View
+- Displays all cases that are currently open.
+
+## RPC Functions
+
+Remote Procedure Calls (RPCs) allow you to execute server-side functions directly from your application.
+
+### fetch_user_cases
+- **Description**: Fetches all cases related to a specific user.
+- **Parameters**: user_id (UUID)
+
+## Storage Bucket Configuration
+
+The Supabase storage bucket is configured to hold various files related to your application. Make sure to configure permissions as necessary to control access.
+
+## Verification Queries
+
+To verify the migrations have been applied correctly, you can run the following queries:
+```sql
+SELECT * FROM information_schema.tables; -- Check all tables exist
+SELECT * FROM active_cases; -- Verify active cases view
+```
 
 ## Rollback Instructions
-- To rollback a migration, revert the changes manually or use a pre-defined rollback file if available.
 
-## Support
-- For assistance, contact support@example.com or visit our support page.
+To rollback a migration, locate the corresponding migration file and reverse the SQL commands. Ensure you have backup copies of your data before proceeding with a rollback.
+
+## Support Information
+
+For further assistance, please refer to the documentation or contact support at support@example.com.
+
+---
+
+_Last Updated: 2026-01-19 03:00:52 UTC_
