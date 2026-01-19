@@ -1,80 +1,68 @@
-# Supabase Migrations Documentation
+# Database Migrations
 
 ## File Structure
 
-The migrations are organized in the following structure:
-```
-supabase/
-└── migrations/
-    ├── [timestamp]_migration_name.sql  # SQL migration files  
-    └── README.md  # This documentation  
-```
+1. `######_initial_migration.sql`
+2. `######_add_new_table.sql`
+3. `######_update_existing_table.sql`
+4. `######_drop_table.sql`
+5. `######_add_index.sql`
+6. `######_alter_column.sql`
+7. `######_add_foreign_key.sql`
+8. `######_create_view.sql`
+9. `######_rpc_function.sql`
 
 ## Execution Order
+Ensure the migrations are executed in the order listed above. Failure to do so may cause issues with dependencies.
 
-Migrations are executed in chronological order based on the timestamp prefix in their filenames. Ensure to follow strict naming conventions to maintain proper order during execution.
-
-## Methods for Running Migrations
-
-### 1. Supabase Dashboard
-- Navigate to the Supabase project.
-- Go to the 'Database' section and find the 'Migrations' tab.
-- Use the interface to apply migrations manually.
-
-### 2. CLI (Command Line Interface)
-- Install Supabase CLI: `npm install -g supabase`  
-- Run migrations using the command:  
-  `supabase db push`  
-- Ensure to be in the directory of your Supabase project.
-
-### 3. PostgreSQL Script
-- Connect to your PostgreSQL database using a SQL client.
-- Execute the migration script:  
-  `	iming on;`  
-- Run the SQL migration file directly to apply changes.
+## Methods to Run Migrations
+1. **Supabase Dashboard:**
+   - Go to the Migrations section and upload the migration files in the specified order.
+2. **CLI:**
+   - Use the Supabase CLI and run `supabase db push` command.
+3. **PostgreSQL Script:**
+   - Run the SQL files directly in your PostgreSQL client.
 
 ## Data Structure
-
-### Tables
-- **Users Table**: Contains user information.
-- **Cases Table**: Stores different case records.
-  - `id`: Primary Key  
-  - `description`: Text  
-  - `status`: Enum (open, closed)
+### Database Tables
+| Table Name     | Description             |
+|----------------|-------------------------|
+| `table_name_1` | Description of table 1  |
+| `table_name_2` | Description of table 2  |
+| ...            | ...                     |
 
 ### Views
-- **Active_Cases_View**: Shows all current open cases.
+| View Name      | Description             |
+|----------------|-------------------------|
+| `view_name_1`  | Description of view 1   |
+| `view_name_2`  | Description of view 2   |
+| ...            | ...                     |
 
-## RPC Function Examples with Usage
-
-### Create_Case
-- **Purpose**: To create a new case entry.  
-- **Example Call**: `SELECT create_case('Description of the case');`
-- **Returns**: Case ID of the newly created record.
-
-### Get_Cases
-- **Purpose**: Retrieves a list of cases.
-- **Example Call**: `SELECT * FROM get_cases();`
-- **Returns**: List of case records.
+### RPC Functions
+| Function Name   | Description             |
+|----------------|-------------------------|
+| `function_name_1` | Description of function 1 |
+| `function_name_2` | Description of function 2 |
+| ...            | ...                     |
 
 ## Additional Configuration Steps for Storage Bucket
-1. Navigate to the 'Storage' section in the Supabase dashboard.
-2. Create a new bucket for storing files.
-3. Configure permissions as necessary.
+- Ensure that you have configured the bucket with proper permissions.
+- Set up any necessary environment variables.
 
-## Verification Queries
-To verify your migrations, execute the following:
-- Check tables: `SELECT * FROM information_schema.tables WHERE table_schema = 'public';`
-- Confirm data integrity: `SELECT * FROM cases WHERE status = 'open';`
+## Verification SQL Queries
+- Run the following queries to verify the integrity and existence of your tables, views, and functions:
+  ```sql
+  SELECT * FROM information_schema.tables;
+  SELECT * FROM information_schema.views;
+  ```
 
 ## Important Notes
-- **Backup**: Always back up your database before running migrations to avoid data loss.
-- **Row-Level Security (RLS)**: Ensure RLS policies are defined for sensitive tables.
+- Always make backups before running migrations.
+- Ensure proper permissions are set for each table and function.
+- Test migrations in a staging environment before running in production.
 
 ## Rollback Instructions
-To rollback a migration:
-1. Identify the migration to revert.
-2. Execute the corresponding SQL script to undo changes made by the migration.
+- To rollback a migration, revert the changes manually or use a pre-defined rollback file if available.
 
-## Support Information
-For assistance, contact the development team via email or reach out on the Saket Slack channel. Ensure to include the migration ID and relevant error messages if any issues arise.
+## Support
+- For assistance, contact support@example.com or visit our support page.
