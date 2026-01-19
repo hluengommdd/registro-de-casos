@@ -172,6 +172,17 @@ FROM cases c
 LEFT JOIN students s ON c.student_id = s.id
 WHERE c.status = 'Activo' AND c.indagacion_start_date IS NOT NULL;
 
+-- Vista: Resumen de plazos por caso (muestra el plazo más urgente de cada caso)
+CREATE OR REPLACE VIEW v_control_plazos_case_resumen AS
+SELECT DISTINCT ON (case_id)
+    case_id,
+    fecha_plazo,
+    dias_restantes,
+    alerta_urgencia
+FROM v_control_plazos_plus
+WHERE fecha_plazo IS NOT NULL
+ORDER BY case_id, dias_restantes ASC NULLS LAST;
+
 -- =====================================================
 -- FUNCIONES RPC
 -- =====================================================
