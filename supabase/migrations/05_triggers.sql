@@ -72,13 +72,13 @@ CREATE OR REPLACE FUNCTION auto_close_case_on_status()
 RETURNS TRIGGER AS $$
 BEGIN
   -- Si el estado cambia a 'Cerrado' y no tiene closed_at
-  IF NEW.status = 'Cerrado' AND OLD.status != 'Cerrado' AND NEW.closed_at IS NULL THEN
+  IF NEW.status = 'Cerrado' AND (OLD.status IS DISTINCT FROM 'Cerrado') AND NEW.closed_at IS NULL THEN
     NEW.closed_at = NOW();
   END IF;
   
   -- Si el estado deja de ser 'Cerrado', limpiar closed_at
   IF NEW.status != 'Cerrado' AND OLD.status = 'Cerrado' THEN
-    NEW. closed_at = NULL;
+    NEW.closed_at = NULL;
   END IF;
   
   RETURN NEW;
