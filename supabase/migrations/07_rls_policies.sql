@@ -1,1 +1,55 @@
--- Row Level Security (RLS) Policies for all tables  \n\n-- Enable Row Level Security for all tables \nALTER TABLE students ENABLE ROW LEVEL SECURITY;  \nALTER TABLE cases ENABLE ROW LEVEL SECURITY;  \nALTER TABLE case_followups ENABLE ROW LEVEL SECURITY;  \nALTER TABLE followup_evidence ENABLE ROW LEVEL SECURITY;  \nALTER TABLE process_stages ENABLE ROW LEVEL SECURITY;  \nALTER TABLE stage_sla ENABLE ROW LEVEL SECURITY;  \nALTER TABLE involucrados ENABLE ROW LEVEL SECURITY;\n\n-- Policies for students table  \nCREATE POLICY select_students ON students FOR SELECT USING (auth.role() = 'authenticated');  \nCREATE POLICY insert_students ON students FOR INSERT WITH CHECK (auth.role() = 'authenticated');  \nCREATE POLICY update_students ON students FOR UPDATE USING (auth.uid() = student_id);  \nCREATE POLICY delete_students ON students FOR DELETE USING (auth.uid() = student_id);\n\n-- Policies for cases table  \nCREATE POLICY select_cases ON cases FOR SELECT USING (auth.role() = 'authenticated');  \nCREATE POLICY insert_cases ON cases FOR INSERT WITH CHECK (auth.role() = 'authenticated');  \nCREATE POLICY update_cases ON cases FOR UPDATE USING (auth.uid() = case_owner_id);  \nCREATE POLICY delete_cases ON cases FOR DELETE USING (auth.uid() = case_owner_id);\n\n-- Policies for case_followups table  \nCREATE POLICY select_case_followups ON case_followups FOR SELECT USING (auth.role() = 'authenticated');  \nCREATE POLICY insert_case_followups ON case_followups FOR INSERT WITH CHECK (auth.role() = 'authenticated');  \nCREATE POLICY update_case_followups ON case_followups FOR UPDATE USING (auth.uid() = followup_owner_id);  \nCREATE POLICY delete_case_followups ON case_followups FOR DELETE USING (auth.uid() = followup_owner_id);\n\n-- Policies for followup_evidence table  \nCREATE POLICY select_followup_evidence ON followup_evidence FOR SELECT USING (auth.role() = 'authenticated');  \nCREATE POLICY insert_followup_evidence ON followup_evidence FOR INSERT WITH CHECK (auth.role() = 'authenticated');  \nCREATE POLICY update_followup_evidence ON followup_evidence FOR UPDATE USING (auth.uid() = evidence_owner_id);  \nCREATE POLICY delete_followup_evidence ON followup_evidence FOR DELETE USING (auth.uid() = evidence_owner_id);\n\n-- Policies for process_stages table  \nCREATE POLICY select_process_stages ON process_stages FOR SELECT USING (auth.role() = 'authenticated');  \nCREATE POLICY insert_process_stages ON process_stages FOR INSERT WITH CHECK (auth.role() = 'authenticated');  \nCREATE POLICY update_process_stages ON process_stages FOR UPDATE USING (auth.uid() = process_stage_owner_id);  \nCREATE POLICY delete_process_stages ON process_stages FOR DELETE USING (auth.uid() = process_stage_owner_id);\n\n-- Policies for stage_sla table  \nCREATE POLICY select_stage_sla ON stage_sla FOR SELECT USING (auth.role() = 'authenticated');  \nCREATE POLICY insert_stage_sla ON stage_sla FOR INSERT WITH CHECK (auth.role() = 'authenticated');  \nCREATE POLICY update_stage_sla ON stage_sla FOR UPDATE USING (auth.uid() = sla_owner_id);  \nCREATE POLICY delete_stage_sla ON stage_sla FOR DELETE USING (auth.uid() = sla_owner_id);\n\n-- Policies for involucrados table  \nCREATE POLICY select_involucrados ON involucrados FOR SELECT USING (auth.role() = 'authenticated');  \nCREATE POLICY insert_involucrados ON involucrados FOR INSERT WITH CHECK (auth.role() = 'authenticated');  \nCREATE POLICY update_involucrados ON involucrados FOR UPDATE USING (auth.uid() = involucrado_owner_id);  \nCREATE POLICY delete_involucrados ON involucrados FOR DELETE USING (auth.uid() = involucrado_owner_id);\n
+-- Row Level Security (RLS) Policies for all tables
+
+-- Enable RLS on all tables
+ALTER TABLE students ENABLE ROW LEVEL SECURITY;
+ALTER TABLE cases ENABLE ROW LEVEL SECURITY;
+ALTER TABLE case_followups ENABLE ROW LEVEL SECURITY;
+ALTER TABLE followup_evidence ENABLE ROW LEVEL SECURITY;
+ALTER TABLE process_stages ENABLE ROW LEVEL SECURITY;
+ALTER TABLE stage_sla ENABLE ROW LEVEL SECURITY;
+ALTER TABLE involucrados ENABLE ROW LEVEL SECURITY;
+
+-- SELECT policy for authenticated users
+CREATE POLICY select_authenticated ON students FOR SELECT USING (auth.uid() IS NOT NULL);
+CREATE POLICY select_authenticated ON cases FOR SELECT USING (auth.uid() IS NOT NULL);
+CREATE POLICY select_authenticated ON case_followups FOR SELECT USING (auth.uid() IS NOT NULL);
+CREATE POLICY select_authenticated ON followup_evidence FOR SELECT USING (auth.uid() IS NOT NULL);
+CREATE POLICY select_authenticated ON process_stages FOR SELECT USING (auth.uid() IS NOT NULL);
+CREATE POLICY select_authenticated ON stage_sla FOR SELECT USING (auth.uid() IS NOT NULL);
+CREATE POLICY select_authenticated ON involucrados FOR SELECT USING (auth.uid() IS NOT NULL);
+
+-- INSERT policy for authenticated users
+CREATE POLICY insert_authenticated ON students FOR INSERT WITH CHECK (auth.uid() IS NOT NULL);
+CREATE POLICY insert_authenticated ON cases FOR INSERT WITH CHECK (auth.uid() IS NOT NULL);
+CREATE POLICY insert_authenticated ON case_followups FOR INSERT WITH CHECK (auth.uid() IS NOT NULL);
+CREATE POLICY insert_authenticated ON followup_evidence FOR INSERT WITH CHECK (auth.uid() IS NOT NULL);
+CREATE POLICY insert_authenticated ON process_stages FOR INSERT WITH CHECK (auth.uid() IS NOT NULL);
+CREATE POLICY insert_authenticated ON stage_sla FOR INSERT WITH CHECK (auth.uid() IS NOT NULL);
+CREATE POLICY insert_authenticated ON involucrados FOR INSERT WITH CHECK (auth.uid() IS NOT NULL);
+
+-- UPDATE policy for authenticated users
+CREATE POLICY update_authenticated ON students FOR UPDATE USING (auth.uid() IS NOT NULL);
+CREATE POLICY update_authenticated ON cases FOR UPDATE USING (auth.uid() IS NOT NULL);
+CREATE POLICY update_authenticated ON case_followups FOR UPDATE USING (auth.uid() IS NOT NULL);
+CREATE POLICY update_authenticated ON followup_evidence FOR UPDATE USING (auth.uid() IS NOT NULL);
+CREATE POLICY update_authenticated ON process_stages FOR UPDATE USING (auth.uid() IS NOT NULL);
+CREATE POLICY update_authenticated ON stage_sla FOR UPDATE USING (auth.uid() IS NOT NULL);
+CREATE POLICY update_authenticated ON involucrados FOR UPDATE USING (auth.uid() IS NOT NULL);
+
+-- DELETE policy for authenticated users
+CREATE POLICY delete_authenticated ON students FOR DELETE USING (auth.uid() IS NOT NULL);
+CREATE POLICY delete_authenticated ON cases FOR DELETE USING (auth.uid() IS NOT NULL);
+CREATE POLICY delete_authenticated ON case_followups FOR DELETE USING (auth.uid() IS NOT NULL);
+CREATE POLICY delete_authenticated ON followup_evidence FOR DELETE USING (auth.uid() IS NOT NULL);
+CREATE POLICY delete_authenticated ON process_stages FOR DELETE USING (auth.uid() IS NOT NULL);
+CREATE POLICY delete_authenticated ON stage_sla FOR DELETE USING (auth.uid() IS NOT NULL);
+CREATE POLICY delete_authenticated ON involucrados FOR DELETE USING (auth.uid() IS NOT NULL);
+
+-- Apply the policies
+ALTER TABLE students FORCE ROW LEVEL SECURITY;
+ALTER TABLE cases FORCE ROW LEVEL SECURITY;
+ALTER TABLE case_followups FORCE ROW LEVEL SECURITY;
+ALTER TABLE followup_evidence FORCE ROW LEVEL SECURITY;
+ALTER TABLE process_stages FORCE ROW LEVEL SECURITY;
+ALTER TABLE stage_sla FORCE ROW LEVEL SECURITY;
+ALTER TABLE involucrados FORCE ROW LEVEL SECURITY;
