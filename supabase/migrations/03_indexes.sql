@@ -5,7 +5,7 @@
 -- =====================================================
 
 -- =====================================================
--- ÍNDICES EN TABLA:  students
+-- ÍNDICES EN TABLA:   students
 -- =====================================================
 CREATE INDEX IF NOT EXISTS idx_students_full_name 
   ON students USING GIN (to_tsvector('spanish', first_name || ' ' || last_name));
@@ -17,7 +17,7 @@ CREATE INDEX IF NOT EXISTS idx_students_grade
   ON students(grade);
 
 -- =====================================================
--- ÍNDICES EN TABLA: cases
+-- ÍNDICES EN TABLA:  cases
 -- =====================================================
 CREATE INDEX IF NOT EXISTS idx_cases_student_id 
   ON cases(student_id);
