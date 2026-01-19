@@ -1,5 +1,5 @@
 -- =====================================================
--- 04_functions. sql
+-- 04_functions.sql
 -- Funciones RPC para estadísticas y reportes
 -- Ejecutar DESPUÉS de 03_indexes.sql
 -- =====================================================
@@ -7,6 +7,8 @@
 -- =====================================================
 -- FUNCIÓN: stats_kpis
 -- KPIs generales del sistema
+-- Parámetros: desde, hasta (ambos DATE)
+-- Retorna: total de casos, abiertos, cerrados y promedio de días para cerrar
 -- =====================================================
 CREATE OR REPLACE FUNCTION stats_kpis(desde DATE, hasta DATE)
 RETURNS TABLE (
@@ -18,13 +20,11 @@ RETURNS TABLE (
 BEGIN
   RETURN QUERY
   SELECT 
-    COUNT(*):: BIGINT AS casos_total,
+    COUNT(*)::BIGINT AS casos_total,
     COUNT(*) FILTER (WHERE status != 'Cerrado')::BIGINT AS abiertos,
     COUNT(*) FILTER (WHERE status = 'Cerrado')::BIGINT AS cerrados,
     COALESCE(
-      AVG(
-        EXTRACT(EPOCH FROM (closed_at - created_at)) / 86400
-      ) FILTER (WHERE closed_at IS NOT NULL),
+      ROUND(AVG(EXTRACT(EPOCH FROM (closed_at - created_at)) / 86400)::NUMERIC, 1),
       0
     )::NUMERIC(10,1) AS promedio_cierre_dias
   FROM cases
@@ -32,11 +32,11 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql STABLE;
 
-COMMENT ON FUNCTION stats_kpis IS 'KPIs generales:  total de casos, abiertos, cerrados y promedio de días para cerrar';
+COMMENT ON FUNCTION stats_kpis IS 'KPIs generales: total de casos, abiertos, cerrados y promedio de días para cerrar';
 
 -- =====================================================
 -- FUNCIÓN: stats_cumplimiento_plazos
--- Estadísticas de cumplimiento de plazos
+-- Estadísticas de cumplimiento de plazos en case_followups
 -- =====================================================
 CREATE OR REPLACE FUNCTION stats_cumplimiento_plazos(desde DATE, hasta DATE)
 RETURNS TABLE (
@@ -53,7 +53,7 @@ BEGIN
       cf.due_date,
       cf.action_date,
       CASE 
-        WHEN cf. due_date IS NOT NULL AND cf.action_date > cf.due_date THEN 1
+        WHEN cf.due_date IS NOT NULL AND cf.action_date > cf.due_date THEN 1
         ELSE 0
       END AS fuera
     FROM case_followups cf
@@ -63,11 +63,11 @@ BEGIN
   )
   SELECT 
     COUNT(*)::BIGINT AS total_plazos,
-    SUM(fuera)::BIGINT AS fuera_plazo,
-    (COUNT(*) - SUM(fuera))::BIGINT AS dentro_plazo,
+    COALESCE(SUM(fuera),0)::BIGINT AS fuera_plazo,
+    (COUNT(*) - COALESCE(SUM(fuera),0))::BIGINT AS dentro_plazo,
     CASE 
       WHEN COUNT(*) > 0 THEN 
-        ROUND(((COUNT(*) - SUM(fuera))::NUMERIC / COUNT(*)) * 100, 1)
+        ROUND(((COUNT(*) - COALESCE(SUM(fuera),0))::NUMERIC / COUNT(*)) * 100, 1)
       ELSE 0
     END AS cumplimiento_pct
   FROM plazos;
@@ -78,7 +78,7 @@ COMMENT ON FUNCTION stats_cumplimiento_plazos IS 'Estadísticas de cumplimiento 
 
 -- =====================================================
 -- FUNCIÓN: stats_reincidencia
--- Cuenta estudiantes con más de un caso
+-- Cuenta estudiantes con más de un caso en el período
 -- =====================================================
 CREATE OR REPLACE FUNCTION stats_reincidencia(desde DATE, hasta DATE)
 RETURNS TABLE (
@@ -102,7 +102,7 @@ COMMENT ON FUNCTION stats_reincidencia IS 'Cuenta estudiantes con 2 o más casos
 
 -- =====================================================
 -- FUNCIÓN: stats_mayor_carga
--- Responsable con más seguimientos
+-- Responsable (campo `responsible`) con más seguimientos en el período
 -- =====================================================
 CREATE OR REPLACE FUNCTION stats_mayor_carga(desde DATE, hasta DATE)
 RETURNS TABLE (
@@ -127,7 +127,7 @@ COMMENT ON FUNCTION stats_mayor_carga IS 'Responsable con más seguimientos regi
 
 -- =====================================================
 -- FUNCIÓN: stats_mayor_nivel
--- Categoría de conducta más frecuente
+-- Categoría de conducta más frecuente (conduct_category)
 -- =====================================================
 CREATE OR REPLACE FUNCTION stats_mayor_nivel(desde DATE, hasta DATE)
 RETURNS TABLE (
@@ -151,7 +151,7 @@ COMMENT ON FUNCTION stats_mayor_nivel IS 'Categoría de conducta con más casos'
 
 -- =====================================================
 -- FUNCIÓN: stats_promedio_seguimientos_por_caso
--- Promedio de seguimientos por caso
+-- Promedio de seguimientos por caso en el período
 -- =====================================================
 CREATE OR REPLACE FUNCTION stats_promedio_seguimientos_por_caso(desde DATE, hasta DATE)
 RETURNS TABLE (
@@ -160,9 +160,9 @@ RETURNS TABLE (
 BEGIN
   RETURN QUERY
   SELECT COALESCE(
-    AVG(cnt)::NUMERIC(10,1),
+    ROUND(AVG(cnt)::NUMERIC,1),
     0
-  )
+  )::NUMERIC(10,1)
   FROM (
     SELECT COUNT(*) AS cnt
     FROM case_followups cf
@@ -177,7 +177,7 @@ COMMENT ON FUNCTION stats_promedio_seguimientos_por_caso IS 'Promedio de seguimi
 
 -- =====================================================
 -- FUNCIÓN: stats_tiempo_primer_seguimiento
--- Promedio de días hasta el primer seguimiento
+-- Promedio de días hasta el primer seguimiento (desde created_at del caso)
 -- =====================================================
 CREATE OR REPLACE FUNCTION stats_tiempo_primer_seguimiento(desde DATE, hasta DATE)
 RETURNS TABLE (
@@ -186,16 +186,14 @@ RETURNS TABLE (
 BEGIN
   RETURN QUERY
   SELECT COALESCE(
-    AVG(
-      EXTRACT(EPOCH FROM (primer. action_date:: TIMESTAMPTZ - c.created_at)) / 86400
-    )::NUMERIC(10,1),
+    ROUND(AVG(EXTRACT(EPOCH FROM (primer.action_date::TIMESTAMPTZ - c.created_at)) / 86400)::NUMERIC,1),
     0
-  )
+  )::NUMERIC(10,1)
   FROM cases c
   INNER JOIN LATERAL (
     SELECT action_date
     FROM case_followups
-    WHERE case_id = c. id
+    WHERE case_id = c.id
     ORDER BY action_date ASC
     LIMIT 1
   ) primer ON TRUE
@@ -206,8 +204,8 @@ $$ LANGUAGE plpgsql STABLE;
 COMMENT ON FUNCTION stats_tiempo_primer_seguimiento IS 'Promedio de días entre creación del caso y primer seguimiento';
 
 -- =====================================================
--- FUNCIÓN:  stats_casos_por_mes
--- Casos agrupados por mes
+-- FUNCIÓN: stats_casos_por_mes
+-- Casos agrupados por mes (YYYY-MM)
 -- =====================================================
 CREATE OR REPLACE FUNCTION stats_casos_por_mes(desde DATE, hasta DATE)
 RETURNS TABLE (
@@ -229,8 +227,8 @@ $$ LANGUAGE plpgsql STABLE;
 COMMENT ON FUNCTION stats_casos_por_mes IS 'Distribución de casos por mes';
 
 -- =====================================================
--- FUNCIÓN:  stats_casos_por_tipificacion
--- Casos agrupados por tipo de conducta
+-- FUNCIÓN: stats_casos_por_tipificacion
+-- Top tipos de conducta por volumen
 -- =====================================================
 CREATE OR REPLACE FUNCTION stats_casos_por_tipificacion(desde DATE, hasta DATE)
 RETURNS TABLE (
@@ -254,7 +252,7 @@ COMMENT ON FUNCTION stats_casos_por_tipificacion IS 'Top 10 tipos de conducta m�
 
 -- =====================================================
 -- FUNCIÓN: stats_casos_por_curso
--- Casos agrupados por curso
+-- Casos agrupados por curso (course_incident)
 -- =====================================================
 CREATE OR REPLACE FUNCTION stats_casos_por_curso(desde DATE, hasta DATE)
 RETURNS TABLE (
@@ -277,7 +275,8 @@ COMMENT ON FUNCTION stats_casos_por_curso IS 'Distribución de casos por curso';
 
 -- =====================================================
 -- FUNCIÓN: start_due_process
--- Iniciar el debido proceso en un caso
+-- Inicia el debido proceso para un caso: marca seguimiento_started_at, due_process_deadline y pone estado
+-- Devuelve un JSON con los datos aplicados
 -- =====================================================
 CREATE OR REPLACE FUNCTION start_due_process(
   p_case_id UUID,
@@ -288,7 +287,7 @@ DECLARE
   v_deadline TIMESTAMPTZ;
   v_result JSON;
 BEGIN
-  -- Calcular fecha límite (días hábiles desde hoy)
+  -- Calcular fecha límite (p_sla_days días a partir de ahora)
   v_deadline := NOW() + (p_sla_days || ' days')::INTERVAL;
   
   -- Actualizar caso
