@@ -9,17 +9,19 @@
 -- =====================================================
 CREATE TABLE IF NOT EXISTS students (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  rut TEXT,
   first_name TEXT NOT NULL DEFAULT '',
   last_name TEXT NOT NULL DEFAULT '',
-  rut TEXT,
-  grade TEXT,
+  level TEXT,          -- se mantiene el nombre actual (no 'grade') para compatibilidad frontend
+  course TEXT,         -- se mantiene 'course'
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
 COMMENT ON TABLE students IS 'Registro de estudiantes del establecimiento';
 COMMENT ON COLUMN students.rut IS 'RUT del estudiante (formato: 12345678-9)';
-COMMENT ON COLUMN students.grade IS 'Curso actual del estudiante';
+COMMENT ON COLUMN students.level IS 'Nivel o curso en formato usado por el frontend';
+COMMENT ON COLUMN students.course IS 'Nombre del curso (ej. 7°A)';
 
 -- =====================================================
 -- TABLA: cases
@@ -59,9 +61,9 @@ CREATE TABLE IF NOT EXISTS cases (
 );
 
 COMMENT ON TABLE cases IS 'Casos de convivencia escolar';
-COMMENT ON COLUMN cases. status IS 'Estado del caso:  Reportado, En Seguimiento, Cerrado';
-COMMENT ON COLUMN cases. conduct_type IS 'Tipificación de la conducta según protocolo';
-COMMENT ON COLUMN cases.conduct_category IS 'Categoría:  Leve, Grave, Gravísima';
+COMMENT ON COLUMN cases.status IS 'Estado del caso: Reportado, En Seguimiento, Cerrado';
+COMMENT ON COLUMN cases.conduct_type IS 'Tipificación de la conducta según protocolo';
+COMMENT ON COLUMN cases.conduct_category IS 'Categoría: Leve, Grave, Gravísima';
 COMMENT ON COLUMN cases.seguimiento_started_at IS 'Fecha de inicio del debido proceso';
 COMMENT ON COLUMN cases.due_process_deadline IS 'Fecha límite para completar el debido proceso';
 
@@ -109,9 +111,9 @@ CREATE TABLE IF NOT EXISTS case_followups (
 );
 
 COMMENT ON TABLE case_followups IS 'Registro de seguimientos y acciones del debido proceso';
-COMMENT ON COLUMN case_followups.action_type IS 'Tipo de acción:  Seguimiento, Entrevista, Citación, etc.';
+COMMENT ON COLUMN case_followups.action_type IS 'Tipo de acción: Seguimiento, Entrevista, Citación, etc.';
 COMMENT ON COLUMN case_followups.process_stage IS 'Etapa actual del debido proceso';
-COMMENT ON COLUMN case_followups.stage_status IS 'Estado:  Completada, Pendiente, En Proceso';
+COMMENT ON COLUMN case_followups.stage_status IS 'Estado: Completada, Pendiente, En Proceso';
 COMMENT ON COLUMN case_followups.due_date IS 'Fecha límite para completar esta acción';
 COMMENT ON COLUMN case_followups.responsible IS 'Responsable de la acción';
 
@@ -166,7 +168,7 @@ COMMENT ON COLUMN stage_sla.days_to_due IS 'Días hábiles para cumplir la etapa
 -- =====================================================
 CREATE TABLE IF NOT EXISTS involucrados (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-  caso_id UUID NOT NULL REFERENCES cases(id) ON DELETE CASCADE,
+  case_id UUID NOT NULL REFERENCES cases(id) ON DELETE CASCADE,
   nombre TEXT NOT NULL,
   rol TEXT NOT NULL,
   curso TEXT,
@@ -177,7 +179,7 @@ CREATE TABLE IF NOT EXISTS involucrados (
 );
 
 COMMENT ON TABLE involucrados IS 'Personas involucradas en un caso (víctimas, testigos, otros responsables)';
-COMMENT ON COLUMN involucrados.rol IS 'Rol:  Víctima, Testigo, Responsable, etc.';
+COMMENT ON COLUMN involucrados.rol IS 'Rol: Víctima, Testigo, Responsable, etc.';
 COMMENT ON COLUMN involucrados.metadata IS 'Datos adicionales en formato JSON';
 
 -- =====================================================
