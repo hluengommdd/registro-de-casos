@@ -25,9 +25,13 @@
     /* Yellow 50 - Calidez */
     --bg-cream-light: #fef3c7;
     /* Amber 100 */
+    --bg-cream-lighter: #fef9e7;
+    /* Light cream blend */
     --bg-white: #ffffff;
     
     /* Refined Neutrals */
+    --neutral-darkest: #0f172a;
+    /* Slate 900 */
     --neutral-dark: #1e293b;
     /* Slate 800 */
     --neutral-medium: #334155;
@@ -52,7 +56,7 @@
 
   body {
     @apply font-sans text-slate-800 antialiased;
-    background: linear-gradient(135deg, #fefce8 0%, #fef3c7 50%, #fef9e7 100%);
+    background: linear-gradient(135deg, var(--bg-cream) 0%, var(--bg-cream-light) 50%, var(--bg-cream-lighter) 100%);
     background-attachment: fixed;
     /* Parallax-like feel */
     overflow: hidden;
@@ -98,7 +102,7 @@
   }
 
   .btn-secondary {
-    @apply bg-transparent text-amber-600 font-medium border-2 border-amber-500 rounded-lg hover:bg-amber-50 hover:border-amber-600 hover:text-amber-700 transition-all duration-200;
+    @apply bg-transparent text-amber-700 font-medium border-2 border-amber-600 rounded-lg hover:bg-amber-50 hover:border-amber-700 hover:text-amber-800 transition-all duration-200;
   }
 
   .btn-ghost {
@@ -203,7 +207,7 @@
 }
 
 .card p {
-  color: #334155;
+  color: var(--neutral-medium);
   /* Slate-700 */
   line-height: 1.6;
 }
@@ -213,13 +217,13 @@
   font-size: 1.875rem;
   font-weight: 700;
   letter-spacing: -0.025em;
-  color: #0f172a;
+  color: var(--neutral-darkest);
 }
 
 .section-title {
   font-size: 1.25rem;
   font-weight: 600;
-  color: #1e293b;
+  color: var(--neutral-dark);
   letter-spacing: -0.01em;
 }
 
