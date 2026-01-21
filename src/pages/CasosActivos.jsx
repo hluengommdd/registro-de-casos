@@ -24,8 +24,16 @@ export default function CasosActivos() {
         setLoading(true)
         const data = await getCases()
 
-        // Solo casos no cerrados
-        const activos = data.filter(c => c.fields?.Estado !== 'Cerrado')
+        // ✅ Solo casos no cerrados + ordenar por Fecha_Incidente (desc)
+        const activos = data
+          .filter(c => c.fields?.Estado !== 'Cerrado')
+          .sort((a, b) => {
+            const da = (a.fields?.Fecha_Incidente || '').slice(0, 10)
+            const db = (b.fields?.Fecha_Incidente || '').slice(0, 10)
+            // "YYYY-MM-DD" ordena bien con localeCompare
+            return db.localeCompare(da)
+          })
+
         setCasos(activos)
 
         // Seleccionar caso automáticamente desde query param
@@ -97,6 +105,14 @@ export default function CasosActivos() {
               {!loading &&
                 casos.map((caso) => {
                   const isSelected = selectedCaso?.id === caso.id
+
+                  // ✅ Mostrar "Falta/Categoría" consistente con el panel derecho
+                  const faltaListado =
+                    caso.fields?.Categoria ||
+                    caso.fields?.Falta ||
+                    caso.fields?.Categoria_Conducta ||
+                    'Sin categoría'
+
                   return (
                     <div
                       key={caso.id}
@@ -131,7 +147,7 @@ export default function CasosActivos() {
                           {caso.fields.Estudiante_Responsable || 'Estudiante sin nombre'}
                         </h4>
                         <p className="text-[11px] text-slate-500 line-clamp-1">
-                          {caso.fields.Categoria_Conducta || 'Sin categoría'}
+                          {faltaListado}
                         </p>
                       </div>
 
