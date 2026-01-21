@@ -26,6 +26,19 @@ export default function CasosActivos() {
 
         // Solo casos no cerrados
         const activos = data.filter(c => c.fields?.Estado !== 'Cerrado')
+
+        // Ordenar cronológicamente desde el primero (más antiguo) hasta el último
+        function parseLocalDate(fecha) {
+          if (!fecha) return 0
+          if (/^\d{4}-\d{2}-\d{2}$/.test(fecha)) {
+            const [y, m, d] = fecha.split('-').map(Number)
+            return new Date(y, m - 1, d).getTime()
+          }
+          return new Date(fecha).getTime() || 0
+        }
+
+        activos.sort((a, b) => parseLocalDate(a.fields?.Fecha_Incidente) - parseLocalDate(b.fields?.Fecha_Incidente))
+
         setCasos(activos)
 
         // Seleccionar caso automáticamente desde query param
@@ -131,7 +144,7 @@ export default function CasosActivos() {
                           {caso.fields.Estudiante_Responsable || 'Estudiante sin nombre'}
                         </h4>
                         <p className="text-[11px] text-slate-500 line-clamp-1">
-                          {caso.fields.Categoria_Conducta || 'Sin categoría'}
+                          {caso.fields.Categoria || 'Sin categoría'}
                         </p>
                       </div>
 

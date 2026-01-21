@@ -190,7 +190,7 @@ export default function Estadisticas() {
             total: kpi.casos_total || 0,
             abiertos: kpi.abiertos || 0,
             cerrados: kpi.cerrados || 0,
-            promedio: kpi.promedio_cierre_dias ?? null
+            promedio: kpi.promedio_cierre_dias != null ? Math.round(Number(kpi.promedio_cierre_dias)) : null
           }}
           cumplimientoPlazo={cumplimientoPlazo}
           fueraDePlazo={Array.from({ length: plazos.fuera_plazo || 0 })}
@@ -288,11 +288,13 @@ export default function Estadisticas() {
       {/* KPI OPERATIVOS */}
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
         {(() => {
+          const promedioCierreDisplay = kpi.promedio_cierre_dias != null ? Math.round(Number(kpi.promedio_cierre_dias)) : '—'
+
           const kpiItems = [
             { label: 'Casos Totales', value: kpi.casos_total, icon: '📊' },
             { label: 'Abiertos / En Proceso', value: kpi.abiertos, icon: '📂' },
             { label: 'Casos Cerrados', value: kpi.cerrados, icon: '✅' },
-            { label: 'Promedio Cierre', value: kpi.promedio_cierre_dias ?? '—', suffix: 'días', icon: '⏱' }
+            { label: 'Promedio Cierre', value: promedioCierreDisplay, suffix: 'días', icon: '⏱' }
           ]
 
           const palette = [

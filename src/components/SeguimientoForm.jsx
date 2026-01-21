@@ -132,7 +132,8 @@ export default function SeguimientoForm({ casoId, defaultProcessStage = null, fo
   }
 
   return (
-    <form onSubmit={handleSubmit} className="bg-white rounded-xl shadow-sm p-4 space-y-3">
+    <form onSubmit={handleSubmit} className="bg-white rounded-xl shadow-sm p-4 flex flex-col h-full">
+      <div className="space-y-3 overflow-y-auto flex-1">
       <select
         value={tipoAccion}
         onChange={e => setTipoAccion(e.target.value)}
@@ -210,13 +211,17 @@ export default function SeguimientoForm({ casoId, defaultProcessStage = null, fo
         )}
       </div>
 
-      <button
-        type="submit"
-        disabled={loading}
-        className="btn-primary w-full disabled:opacity-50"
-      >
-        {loading ? 'Guardando…' : isEdit ? 'Actualizar acción' : 'Registrar acción'}
-      </button>
+      </div>
+
+      <div className="pt-3 border-t bg-white">
+        <button
+          type="submit"
+          disabled={loading}
+          className="btn-primary w-full disabled:opacity-50"
+        >
+          {loading ? 'Guardando…' : isEdit ? 'Actualizar acción' : 'Registrar acción'}
+        </button>
+      </div>
     </form>
   )
 }

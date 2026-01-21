@@ -319,8 +319,8 @@ export default function SeguimientoPage({
 
       {/* MODAL */}
       {!soloLectura && ((typeof externalMostrarForm === 'boolean' ? externalMostrarForm : mostrarForm)) && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-          <div className="glass w-full max-w-lg p-6 relative">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+          <div className="glass w-full max-w-md sm:max-w-lg md:max-w-2xl mx-auto p-0 sm:p-0 relative max-h-[90vh] flex flex-col h-full">
             <button
               onClick={() => {
                 if (typeof setExternalMostrarForm === 'function') setExternalMostrarForm(false)
@@ -331,20 +331,20 @@ export default function SeguimientoPage({
               ✕
             </button>
 
-            <h2 className="text-lg font-semibold mb-4">
-              Registrar nueva acción
-            </h2>
+            <div className="p-4 sm:p-6 flex-1 overflow-y-auto">
+              <h2 className="text-lg font-semibold mb-4">Registrar nueva acción</h2>
 
-            <SeguimientoForm
-              casoId={casoId}
-              onSaved={() => {
-                setRefreshKey(k => k + 1)
-                if (typeof setExternalMostrarForm === 'function') setExternalMostrarForm(false)
-                else setMostrarForm(false)
-                emitDataUpdated()
-                onDataChange?.()
-              }}
-            />
+              <SeguimientoForm
+                casoId={casoId}
+                onSaved={() => {
+                  setRefreshKey(k => k + 1)
+                  if (typeof setExternalMostrarForm === 'function') setExternalMostrarForm(false)
+                  else setMostrarForm(false)
+                  emitDataUpdated()
+                  onDataChange?.()
+                }}
+              />
+            </div>
           </div>
         </div>
       )}

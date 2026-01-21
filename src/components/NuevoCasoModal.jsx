@@ -242,11 +242,11 @@ export default function NuevoCasoModal({ onClose, onSaved }) {
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-      <div className="w-full max-w-3xl sm:max-w-4xl lg:max-w-6xl relative space-y-4">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+      <div className="w-full max-w-lg sm:max-w-2xl md:max-w-4xl mx-auto relative space-y-4 max-h-[90vh]">
 
-        {/* Usar tarjeta consistente para el modal */}
-        <div className="bg-white rounded-xl shadow-sm p-6 relative">
+        {/* Usar tarjeta consistente para el modal: estructura flex columna */}
+        <div className="bg-white rounded-xl shadow-sm p-0 sm:p-0 relative flex flex-col h-full max-h-[90vh]">
 
         {guardando && (
             <div className="absolute inset-0 bg-white/90 flex items-center justify-center rounded-xl z-10">
@@ -263,13 +263,14 @@ export default function NuevoCasoModal({ onClose, onSaved }) {
           ✕
         </button>
 
-        <h2 className="text-xl font-semibold">Nuevo Caso</h2>
+        <div className="p-4 sm:p-6 flex-1 overflow-y-auto">
+          <h2 className="text-xl font-semibold">Nuevo Caso</h2>
 
-        {/* FECHA / HORA */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          <input type="date" value={fecha} onChange={e => setFecha(e.target.value)} className="border rounded p-2" />
-          <input type="time" value={hora} onChange={e => setHora(e.target.value)} className="border rounded p-2" />
-        </div>
+          {/* FECHA / HORA */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-2">
+            <input type="date" value={fecha} onChange={e => setFecha(e.target.value)} className="border rounded p-2 w-full" />
+            <input type="time" value={hora} onChange={e => setHora(e.target.value)} className="border rounded p-2 w-full" />
+          </div>
 
         {/* PRIMERA LINEA: fecha/hora (arriba) */}
 
@@ -353,7 +354,7 @@ export default function NuevoCasoModal({ onClose, onSaved }) {
 
         {/* DESCRIPCIÓN */}
         <textarea
-          className="w-full border rounded p-2 text-sm"
+          className="w-full border rounded p-2 text-sm resize-none"
           rows={3}
           placeholder="Relato breve y objetivo del hecho ocurrido…"
           value={descripcionLibre}
@@ -425,8 +426,10 @@ export default function NuevoCasoModal({ onClose, onSaved }) {
 
         {/* Nota: rol del estudiante principal ya se selecciona en la segunda línea */}
 
-        {/* ACCIONES */}
-        <div className="flex justify-end gap-2 pt-4">
+        </div>
+
+        {/* ACCIONES: footer siempre visible */}
+        <div className="p-3 sm:p-4 border-t bg-white sticky bottom-0 flex justify-end gap-2">
           <button
             type="button"
             onClick={onClose}

@@ -110,7 +110,7 @@ export default function CasosCerrados() {
                           {caso.fields.Estudiante_Responsable}
                         </h4>
                         <p className="text-xs text-slate-500 line-clamp-1">
-                          {caso.fields.Categoria_Conducta}
+                          {caso.fields.Categoria}
                         </p>
                       </div>
 

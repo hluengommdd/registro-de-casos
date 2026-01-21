@@ -392,7 +392,7 @@ export default function Dashboard() {
                     </span>
                   </div>
                   <h4 className="font-bold text-slate-800 text-sm mb-1 group-hover:text-brand-600 transition-colors">
-                    {c.fields?.Categoria_Conducta || 'Sin categoría'}
+                    {c.fields?.Categoria || 'Sin categoría'}
                   </h4>
                   <div className="flex items-center gap-2 text-xs text-slate-500">
                     <span className="w-1.5 h-1.5 rounded-full bg-slate-300"></span>
