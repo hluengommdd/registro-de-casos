@@ -10,40 +10,40 @@ export default {
         sans: ['Inter', 'sans-serif'],
       },
       colors: {
+        // Paleta fría en escala de grises + acento azul grisáceo
         brand: {
-          50: '#f5f3ff',
-          100: '#ede9fe',
-          200: '#ddd6fe',
-          300: '#c4b5fd',
-          400: '#a78bfa',
-          500: '#8b5cf6', // Violet Primary
-          600: '#7c3aed',
-          700: '#6d28d9',
-          800: '#5b21b6',
-          900: '#4c1d95',
-          950: '#2e1065',
+          50: '#f7f8f9',
+          100: '#eef1f3',
+          200: '#e1e6e9',
+          300: '#cfd7dc',
+          400: '#b8c3ca',
+          500: '#6b7280',
+          600: '#4b5563',
+          700: '#27313a',
+          800: '#0b1220',
+          900: '#05070a',
         },
         accent: {
-          50: '#eff6ff',
-          100: '#dbeafe',
-          500: '#3b82f6', // Indigo/Blue Accent
-          600: '#2563eb',
+          50: '#f4f6f8',
+          100: '#e9eef2',
+          500: '#334155',
+          600: '#25313b',
         },
         slate: {
-          850: '#1e293b', // Custom dark slate
-          900: '#0f172a',
-          950: '#020617',
+          850: '#1f2937',
+          900: '#0b1220',
+          950: '#07090b',
         }
       },
       backgroundImage: {
-        'gradient-brand': 'linear-gradient(135deg, #6366f1 0%, #a855f7 100%)', // Indigo to Purple
-        'gradient-dark': 'linear-gradient(to bottom right, #0f172a, #1e1b4b)',
-        'glass': 'linear-gradient(180deg, rgba(255, 255, 255, 0.7) 0%, rgba(255, 255, 255, 0.3) 100%)',
+        'gradient-brand': 'linear-gradient(135deg, #f8fafb 0%, #e6eef6 100%)',
+        'gradient-dark': 'linear-gradient(to bottom right, #0b1220, #1f2937)',
+        'glass': 'linear-gradient(180deg, rgba(255, 255, 255, 0.85) 0%, rgba(255, 255, 255, 0.6) 100%)',
       },
       boxShadow: {
-        'glass': '0 8px 32px 0 rgba(31, 38, 135, 0.07)',
-        'glass-sm': '0 4px 16px 0 rgba(31, 38, 135, 0.05)',
-        'neon': '0 0 10px rgba(139, 92, 246, 0.5), 0 0 20px rgba(139, 92, 246, 0.3)',
+        'glass': '0 8px 32px 0 rgba(15, 23, 42, 0.06)',
+        'glass-sm': '0 4px 16px 0 rgba(15, 23, 42, 0.04)',
+        'soft': '0 6px 18px rgba(2,6,23,0.08)'
       },
       backdropBlur: {
         'xs': '2px',

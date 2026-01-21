@@ -147,7 +147,7 @@ export default function AlertasPlazos() {
       <div className="flex justify-between items-center border-b border-white/40 pb-6">
         <div>
           <h1 className="text-2xl sm:text-3xl font-black text-slate-800 tracking-tight flex items-center gap-3">
-            <span className="bg-gradient-brand p-1.5 sm:p-2 rounded-xl text-white shadow-lg shadow-brand-500/30">
+            <span className="bg-accent-600 p-1.5 sm:p-2 rounded-xl text-white shadow-sm">
               <Clock className="w-5 h-5 sm:w-7 sm:h-7" />
             </span>
             Control de Alertas
@@ -447,7 +447,7 @@ function Seccion({
                 <span className="text-[10px] text-slate-400 font-medium">
                   {actividadLabel ? (
                     <>
-                      {lastAction ? `Actividad ${actividadLabel}` : `Abierto ${actividadLabel}`}
+                      {lastAction ? `Actividad ${actividadLabel}` : `Abierto ${actividadLabel}`} {fuente ? `· ${fuente}` : ''}
                     </>
                   ) : <span className="italic">Sin actividad reciente</span>}
                 </span>

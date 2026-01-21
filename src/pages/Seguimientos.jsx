@@ -151,13 +151,13 @@ export default function Seguimientos() {
             <p className="text-xs text-slate-500 mt-1">Avance del ciclo de vida del caso</p>
           </div>
 
-          <button
+            <button
             onClick={() => {
               setDefaultStage(currentStageKey || null)
               setFollowupEnEdicion(null)
               setMostrarForm(true)
             }}
-            className="px-4 py-2 text-sm rounded-lg bg-brand-600 hover:bg-brand-700 text-white font-medium shadow-sm transition-colors"
+            className="px-4 py-2 text-sm rounded-lg bg-green-600 hover:bg-green-700 text-white font-medium shadow-sm transition-colors"
           >
             + Registrar acción
           </button>
@@ -204,29 +204,28 @@ export default function Seguimientos() {
 
         {/* DER: Detalles del caso (mock style) */}
         <div className="bg-white rounded-2xl shadow-sm p-4 sm:p-6 min-h-[420px]">
-          <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-3">
-            Detalles del Caso
-          </h3>
+          <div className="flex items-start justify-between mb-3">
+            <h3 className="text-base sm:text-lg font-semibold text-gray-900">
+              Detalles del Caso
+            </h3>
+            {/* Mostrar botón de cierre junto al título si corresponde */}
+            {(!loadingCaso && caso?.fields) && (() => {
+              const estado = (caso?.fields?.Estado ?? "").trim()
+              const estadoNorm = estado.toLowerCase()
+              const isClosed = estadoNorm === "cerrado"
+              const isEnSeguimiento = estadoNorm === "en seguimiento"
+              const showCerrar = !!casoId && isEnSeguimiento && !isClosed
+              return showCerrar ? (
+                <div className="flex items-center">
+                  <CerrarButton casoId={casoId} setRefreshKey={setRefreshKey} />
+                </div>
+              ) : null
+            })()}
+          </div>
 
           {loadingCaso && <p className="text-sm text-gray-500">Cargando caso…</p>}
 
           {!loadingCaso && caso?.fields && (() => {
-            const estado = (caso?.fields?.Estado ?? "").trim()
-            const estadoNorm = estado.toLowerCase()
-            const isClosed = estadoNorm === "cerrado"
-            // Mostrar botón si el caso está en "En Seguimiento" (independiente de seguimiento_started_at)
-            const isEnSeguimiento = estadoNorm === "en seguimiento"
-            const showCerrar = !!casoId && isEnSeguimiento && !isClosed
-
-            console.log('🔍 Debug botón Cierre de caso:', {
-              casoId,
-              estado,
-              estadoNorm,
-              isEnSeguimiento,
-              isClosed,
-              showCerrar,
-            })
-
             return (
               <CaseDetailsCard
                 caso={caso}
@@ -236,13 +235,6 @@ export default function Seguimientos() {
                 isReincidente={false}
                 isPendingStart={false}
                 involucradosSlot={<InvolucradosList casoId={casoId} readOnly />}
-                actionsSlot={
-                  showCerrar ? (
-                    <div className="flex justify-end">
-                      <CerrarButton casoId={casoId} setRefreshKey={setRefreshKey} />
-                    </div>
-                  ) : null
-                }
               />
             )
           })()}

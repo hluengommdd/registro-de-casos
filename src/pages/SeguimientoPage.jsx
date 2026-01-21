@@ -135,25 +135,26 @@ export default function SeguimientoPage({
       <div className="flex justify-between items-center rounded-2xl glass-panel p-6 relative overflow-hidden group">
         <div className="absolute top-0 right-0 w-64 h-64 bg-brand-500/10 rounded-full blur-[80px] -translate-y-1/2 translate-x-1/2 pointer-events-none"></div>
 
-        <div className="relative z-10 flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
-          <div className="flex items-center gap-3">
-            <div className="p-2 sm:p-2.5 bg-gradient-to-br from-brand-500 to-violet-600 rounded-xl text-white shadow-lg shadow-brand-500/30 shrink-0">
+        <div className="relative z-10 flex-1 min-w-0 flex items-start sm:items-center gap-4">
+          <div className="flex items-center gap-3 min-w-0">
+            <div className="p-2 sm:p-2.5 bg-gradient-to-br from-brand-500 to-violet-600 rounded-xl text-white shadow-lg shadow-brand-500/30 flex-shrink-0">
               <FileText className="w-5 h-5 sm:w-6 sm:h-6" />
             </div>
-            <h1 className="text-xl sm:text-2xl font-black text-slate-800 tracking-tight">
-              Seguimiento del Caso
-            </h1>
+            <div className="min-w-0">
+              <h1 className="text-xl sm:text-2xl font-black text-slate-800 tracking-tight truncate">
+                Seguimiento del Caso
+              </h1>
+              <p className="text-sm font-medium text-slate-500 mt-1 hidden sm:flex items-center gap-3">
+                <span className="bg-slate-100/50 px-2 py-0.5 rounded border border-slate-200/50">ID: <span className="font-mono text-slate-700">{caso.fields.ID_Caso}</span></span>
+                <span className={`px-2 py-0.5 rounded text-xs font-bold uppercase tracking-wide border ${esCerrado ? 'bg-slate-100 text-slate-600 border-slate-200' : 'bg-emerald-50 text-emerald-600 border-emerald-200'}`}>
+                  {caso.fields.Estado}
+                </span>
+              </p>
+            </div>
           </div>
-          <p className="text-sm font-medium text-slate-500 mt-2 ml-1 flex items-center gap-3">
-            <span className="bg-slate-100/50 px-2 py-0.5 rounded border border-slate-200/50">ID: <span className="font-mono text-slate-700">{caso.fields.ID_Caso}</span></span>
-            <span className={`px-2 py-0.5 rounded text-xs font-bold uppercase tracking-wide border ${esCerrado ? 'bg-slate-100 text-slate-600 border-slate-200' : 'bg-emerald-50 text-emerald-600 border-emerald-200'
-              }`}>
-              {caso.fields.Estado}
-            </span>
-          </p>
         </div>
 
-        <div className="flex gap-2">
+        <div className="flex items-center gap-3 z-20">
           {showExport && (
             <button
               onClick={async () => {
@@ -197,9 +198,9 @@ export default function SeguimientoPage({
                   push({ type: 'error', title: 'Error al generar PDF', message: e?.message || 'Intenta de nuevo' })
                 }
               }}
-              className="btn-primary flex items-center gap-2 px-5 py-2.5 shadow-brand-500/20"
+                className="bg-green-600 text-white flex items-center gap-2 px-2.5 sm:px-3 py-1.5 text-sm shadow-sm whitespace-nowrap rounded-sm hover:bg-green-700"
             >
-              <Download size={18} />
+                  <Download size={14} />
               <span>Exportar Informe</span>
             </button>
           )}
@@ -211,13 +212,13 @@ export default function SeguimientoPage({
                 if (typeof setExternalMostrarForm === 'function') setExternalMostrarForm(true)
                 else setMostrarForm(true)
               }}
-              className="px-3 py-2 text-sm border rounded hover:bg-gray-50 flex items-center"
+              className="bg-green-600 text-white px-3 py-2 text-sm rounded flex items-center whitespace-nowrap hover:bg-green-700"
             >
               <span className="text-green-600 mr-2">+</span>
               Nueva Acción
             </button>
           )}
-        </div>
+          </div>
       </div>
 
       {!loadingCaso && caso?.fields && (

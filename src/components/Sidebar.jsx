@@ -91,17 +91,17 @@ export default function Sidebar({ mobileOpen = false, onClose = () => { } }) {
     'group flex items-center gap-2.5 px-3 py-2 mx-2.5 rounded-xl text-[13px] font-medium transition-all duration-300 relative overflow-hidden'
 
   const activeClass =
-    'bg-gradient-brand text-white shadow-lg shadow-brand-500/30 ring-1 ring-white/20'
+    'bg-brand-800 text-white shadow-soft ring-1 ring-white/10'
 
   const inactiveClass =
-    'text-slate-500/80 hover:bg-white/50 hover:text-slate-900 hover:shadow-sm'
+    'text-slate-600 hover:bg-white hover:text-slate-900 hover:shadow-sm'
 
   return (
     <>
       {/* Desktop sidebar - FLOATING */}
       <aside
-        className={`hidden sm:flex flex-col m-2.5 mr-0 relative z-20 
-          bg-white/80 backdrop-blur-xl border border-white/40 shadow-glass rounded-3xl 
+        className={`hidden sm:flex flex-col m-2.5 mr-0 relative z-20
+          glass-panel
           transition-all duration-500 ease-[cubic-bezier(0.25,0.8,0.25,1)]
           ${collapsed ? 'sidebar-collapsed w-[88px]' : 'w-60'}
         `}
@@ -110,7 +110,7 @@ export default function Sidebar({ mobileOpen = false, onClose = () => { } }) {
         <div className="p-4 pb-2 flex items-center justify-between relative">
           <div className={`flex items-center gap-2.5 transition-all duration-300 ${collapsed ? 'opacity-0 absolute pointer-events-none translate-x-[-10px]' : 'opacity-100'}`}> 
             <div className="relative">
-              <div className="absolute inset-0 bg-brand-500 blur-lg opacity-20 rounded-full"></div>
+              <div className="absolute inset-0 bg-accent-500 blur-md opacity-10 rounded-full"></div>
               <Logo size={40} className="relative z-10" />
             </div>
             <div>
@@ -127,8 +127,8 @@ export default function Sidebar({ mobileOpen = false, onClose = () => { } }) {
             aria-label={collapsed ? 'Expandir sidebar' : 'Colapsar sidebar'}
             onClick={() => setCollapsed(s => !s)}
             className={`
-              relative z-30 p-1.5 rounded-lg bg-white/50 hover:bg-white text-slate-400 hover:text-brand-600 
-              transition-all shadow-sm border border-slate-100 hover:border-brand-200 
+              relative z-30 p-1.5 rounded-lg bg-white/50 hover:bg-white text-slate-500 hover:text-accent-600 
+              transition-all shadow-sm border border-slate-100 hover:border-slate-200 
               hover:scale-110 active:scale-95
               ${collapsed ? 'mx-auto' : ''}
             `}
@@ -253,13 +253,13 @@ export default function Sidebar({ mobileOpen = false, onClose = () => { } }) {
 
         {/* User Footer */}
         <div className="p-4 mt-auto">
-          <div className={`p-3 rounded-2xl bg-gradient-to-br from-slate-50 to-white border border-white/60 shadow-sm flex items-center gap-3 transition-opacity duration-300 ${collapsed ? 'opacity-0' : 'opacity-100'}`}> 
+          <div className={`p-3 rounded-2xl glass-card flex items-center gap-3 transition-opacity duration-300 ${collapsed ? 'opacity-0' : 'opacity-100'}`}>
             <div className="w-8 h-8 rounded-full bg-slate-200 flex items-center justify-center text-xs font-bold text-slate-500">
               U
             </div>
             <div className="overflow-hidden">
-              <p className="text-xs font-bold text-slate-700 truncate">Usuario Sistema</p>
-              <p className="text-[10px] text-slate-400 truncate">Convivencia</p>
+              <p className="text-xs font-bold text-slate-800 truncate">Usuario Sistema</p>
+              <p className="text-[10px] text-slate-500 truncate">Convivencia</p>
             </div>
           </div>
         </div>
@@ -274,12 +274,12 @@ export default function Sidebar({ mobileOpen = false, onClose = () => { } }) {
             <div className="flex items-center justify-between p-4 border-b border-slate-100">
               <div className="flex items-center gap-3">
                 <div className="relative">
-                  <div className="absolute inset-0 bg-brand-500 blur-lg opacity-20 rounded-full"></div>
+                  <div className="absolute inset-0 bg-accent-500 blur-md opacity-10 rounded-full"></div>
                   <Logo size={32} className="relative z-10" />
                 </div>
                 <div>
                   <h1 className="text-sm font-black text-slate-800 tracking-tight leading-none">Convivencia</h1>
-                  <p className="text-[8px] font-bold text-brand-500 tracking-widest uppercase mt-0.5">Escolar</p>
+                  <p className="text-[8px] font-bold text-slate-600 tracking-widest uppercase mt-0.5">Escolar</p>
                 </div>
               </div>
               <button onClick={onClose} className="p-2 rounded-full hover:bg-slate-100 text-slate-400">
@@ -308,7 +308,7 @@ export default function Sidebar({ mobileOpen = false, onClose = () => { } }) {
                   className={`flex items-center justify-between w-full px-3 py-2 rounded-xl text-[13px] font-medium transition-all ${expandedSeguimientos ? 'bg-slate-50 text-slate-900 border border-slate-100/50' : 'text-slate-500/80 hover:bg-white/50 hover:text-slate-900'}`}
                 >
                   <span className="flex items-center gap-2.5">
-                    <CheckCircle size={18} className={expandedSeguimientos ? 'text-brand-500' : ''} />
+                    <CheckCircle size={18} className={expandedSeguimientos ? 'text-accent-600' : ''} />
                     <span>Seguimientos</span>
                   </span>
                   <ChevronDown size={16} className={`transition-transform duration-300 text-slate-400 ${expandedSeguimientos ? 'rotate-180' : ''}`} />

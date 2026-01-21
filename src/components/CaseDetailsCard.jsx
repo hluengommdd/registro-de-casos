@@ -1,4 +1,5 @@
 import { formatDate } from "../utils/formatDate"
+import { tipHeaderClasses } from '../utils/tipColors'
 import { listEvidenceByFollowup, getEvidenceSignedUrl } from "../api/evidence"
 
 // =========================
@@ -104,7 +105,7 @@ export default function CaseDetailsCard({
     <div className="rounded-xl border border-slate-200 bg-white flex flex-col overflow-hidden shadow-sm">
       {/* Header */}
       <div
-        className={`relative h-28 ${headerImageUrl ? "bg-cover bg-center" : "bg-gradient-to-r from-brand-700 to-brand-900"
+        className={`relative h-28 ${headerImageUrl ? "bg-cover bg-center" : "bg-brand-800"
           }`}
         style={headerStyle}
       >
@@ -115,15 +116,20 @@ export default function CaseDetailsCard({
           </div>
 
           <div className="min-w-0 text-white pb-1">
-            <div className="text-[10px] text-brand-100 uppercase tracking-widest font-semibold mb-0.5">Estudiante</div>
+            <div className="text-[10px] text-slate-100 uppercase tracking-widest font-semibold mb-0.5">Estudiante</div>
             <div className="font-bold text-lg leading-tight truncate">{nombre}</div>
-            <div className="text-xs text-brand-100 truncate mt-0.5">Curso: {curso}</div>
+            <div className="text-xs text-slate-200 truncate mt-0.5">Curso: {curso}</div>
           </div>
+          {actionsSlot && (
+            <div className="absolute top-3 right-4">
+              {actionsSlot}
+            </div>
+          )}
         </div>
 
         {/* Badges container floating at bottom right */}
         <div className="absolute bottom-3 right-4 flex gap-2">
-          <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-white/20 text-white backdrop-blur-sm border border-white/10">{gravedad}</span>
+          <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${tipHeaderClasses(gravedad)} border border-white/10`}>{gravedad}</span>
           {!isPendingStart && <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-white/20 text-white backdrop-blur-sm border border-white/10">{estado}</span>}
           {isOverdue && <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-500 text-white shadow-sm">{overdueLabel}</span>}
         </div>
@@ -259,12 +265,7 @@ export default function CaseDetailsCard({
           </div>
         )}
       </div>
-      {/* Footer acciones */}
-      {actionsSlot ? (
-        <div className="border-t px-4 py-3 bg-white">
-          {actionsSlot}
-        </div>
-      ) : null}
+      {/* Footer acciones (removed - actions are rendered in header when provided) */}
     </div>
   )
 }

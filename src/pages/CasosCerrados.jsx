@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { getCases } from '../api/db'
 import SeguimientoPage from './SeguimientoPage'
 import { formatDate } from '../utils/formatDate'
+import { tipBadgeClasses } from '../utils/tipColors'
 
 export default function CasosCerrados() {
   const [casos, setCasos] = useState([])
@@ -79,7 +80,7 @@ export default function CasosCerrados() {
               )}
 
               {!loading &&
-                casos.map((caso, index) => {
+                casos.map((caso) => {
                   const isSelected = selectedCaso?.id === caso.id
                   return (
                     <div
@@ -94,10 +95,7 @@ export default function CasosCerrados() {
                       `}
                     >
                       <div className="flex justify-between items-start mb-2 pl-2">
-                        <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${caso.fields.Tipificacion_Conducta === 'Muy Grave' ? 'bg-purple-50 text-purple-700 border-purple-200' :
-                          caso.fields.Tipificacion_Conducta === 'Grave' ? 'bg-amber-50 text-amber-700 border-amber-200' :
-                            'bg-emerald-50 text-emerald-700 border-emerald-200'
-                          }`}>
+                        <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${tipBadgeClasses(caso.fields.Tipificacion_Conducta)}`}>
                           {caso.fields.Tipificacion_Conducta}
                         </span>
                         <span className="text-[10px] font-medium text-slate-400">

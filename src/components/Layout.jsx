@@ -77,11 +77,11 @@ export default function Layout() {
   }, [])
 
   return (
-    <div className="flex h-screen overflow-hidden bg-slate-50 selection:bg-brand-500/30">
+    <div className="flex h-screen overflow-hidden bg-slate-50 selection:bg-accent-500/30">
       {/* Background Gradients (Global) */}
       <div className="fixed inset-0 z-0 pointer-events-none">
-        <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-brand-400/15 rounded-full blur-[120px] animate-pulse-slow" />
-        <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-accent-400/15 rounded-full blur-[120px] animate-pulse-slow animation-delay-400" />
+        <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-brand-300/10 rounded-full blur-[120px] animate-pulse-slow" />
+        <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-accent-300/10 rounded-full blur-[120px] animate-pulse-slow animation-delay-400" />
       </div>
 
       {/* SIDEBAR */}
@@ -102,24 +102,22 @@ export default function Layout() {
 
           {/* Page Title (Dynamic from route) */}
           <div className="flex-1 flex items-center gap-3">
-            <h2 className="text-base sm:text-lg font-black bg-gradient-to-r from-indigo-600 to-violet-600 bg-clip-text text-transparent tracking-tight">
-              {location.pathname === '/' ? 'Dashboard' :
-                location.pathname === '/casos-activos' ? 'Casos Activos' :
-                  location.pathname === '/casos-cerrados' ? 'Casos Cerrados' :
-                    location.pathname.includes('seguimientos') ? 'Seguimiento de Caso' :
-                      location.pathname === '/estadisticas' ? 'Estadísticas' :
-                        location.pathname === '/alertas' ? 'Alertas y Plazos' :
-                          'Convivencia Escolar'
-              }
-            </h2>
+            <h2 className="page-title">{getTitle() || 'Convivencia Escolar'}</h2>
           </div>
 
           {/* Status Indicators */}
           <div className="hidden sm:flex items-center gap-3">
-            <div className="flex items-center gap-2 px-2.5 py-1 rounded-full bg-emerald-50 border border-emerald-100">
-              <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></div>
-              <span className="text-[11px] font-bold text-emerald-700">Sistema Activo</span>
-            </div>
+            {online && sbOk ? (
+              <div className="flex items-center gap-2 px-2.5 py-1 rounded-full bg-emerald-50 border border-emerald-100">
+                <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></div>
+                <span className="text-[11px] font-bold text-emerald-700">Sistema Activo</span>
+              </div>
+            ) : (
+              <div className="flex items-center gap-2 px-2.5 py-1 rounded-full bg-red-50 border border-red-100">
+                <div className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse"></div>
+                <span className="text-[11px] font-bold text-red-700">Desconectado</span>
+              </div>
+            )}
           </div>
         </div>
 

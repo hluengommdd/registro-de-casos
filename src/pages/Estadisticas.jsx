@@ -234,7 +234,7 @@ export default function Estadisticas() {
         </div>
         <button
           onClick={handleExportPDF}
-          className="btn-primary bg-brand-600 hover:bg-brand-700 transition shadow-sm px-4 py-2 text-sm font-medium"
+          className="btn-primary bg-green-600 hover:bg-green-700 text-white transition shadow-sm px-4 py-2 text-sm font-medium"
         >
           Exportar PDF
         </button>

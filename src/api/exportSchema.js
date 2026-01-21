@@ -1,13 +1,11 @@
-import { createClient } from '@supabase/supabase-js';
+/* global process */
 import fs from 'fs';
 import path from 'path';
 import pg from 'pg';
-
 const SUPABASE_URL = process.env.VITE_SUPABASE_URL;
 const SUPABASE_KEY = process.env.VITE_SUPABASE_ANON_KEY;
 const SUPABASE_DB_URL = process.env.SUPABASE_DB_URL; // postgres://user:password@host:port/database
 
-const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 const { Pool } = pg;
 
 async function exportSchema() {

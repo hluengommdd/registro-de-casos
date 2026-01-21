@@ -5,6 +5,7 @@ import { getCases } from '../api/db'
 import CaseDetailPanel from '../components/CaseDetailPanel'
 import NuevoCasoModal from '../components/NuevoCasoModal'
 import { formatDate } from '../utils/formatDate'
+import { tipBadgeClasses } from '../utils/tipColors'
 import { onDataUpdated } from '../utils/refreshBus'
 
 export default function CasosActivos() {
@@ -78,7 +79,7 @@ export default function CasosActivos() {
             </div>
             <button
               onClick={() => setNuevo(true)}
-              className="btn-primary flex items-center gap-2 text-sm px-4 shadow-brand-500/25"
+              className="btn-primary bg-green-600 hover:bg-green-700 text-white flex items-center gap-2 text-sm px-4 shadow-brand-500/25"
             >
               <Plus size={18} />
               <span className="hidden sm:inline">Nuevo</span>
@@ -128,10 +129,7 @@ export default function CasosActivos() {
                       )}
 
                       <div className="flex justify-between items-start mb-2 pl-2">
-                        <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${caso.fields.Tipificacion_Conducta === 'Muy Grave' ? 'bg-red-50 text-red-700 border-red-200' :
-                          caso.fields.Tipificacion_Conducta === 'Grave' ? 'bg-amber-50 text-amber-700 border-amber-200' :
-                            'bg-slate-50 text-slate-700 border-slate-200'
-                          }`}>
+                        <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${tipBadgeClasses(caso.fields.Tipificacion_Conducta)}`}>
                           {caso.fields.Tipificacion_Conducta}
                         </span>
                         <span className="text-[10px] font-medium text-slate-400 group-hover:text-slate-600 transition-colors">
