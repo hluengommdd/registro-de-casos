@@ -12,7 +12,7 @@ import {
   ChevronDown,
 } from 'lucide-react'
 
-import Logo from './Logo'
+import { BRANDING } from '../config/branding'
 import { useEffect, useState } from 'react'
 import { getCases } from '../api/db'
 import { onDataUpdated } from '../utils/refreshBus'
@@ -109,16 +109,16 @@ export default function Sidebar({ mobileOpen = false, onClose = () => { } }) {
         {/* HEADER CON LOGO */}
         <div className="p-4 pb-2 flex items-center justify-between relative">
           <div className={`flex items-center gap-2.5 transition-all duration-300 ${collapsed ? 'opacity-0 absolute pointer-events-none translate-x-[-10px]' : 'opacity-100'}`}> 
-            <div className="relative">
+              <div className="relative">
               <div className="absolute inset-0 bg-accent-500 blur-md opacity-10 rounded-full"></div>
-              <Logo size={40} className="relative z-10" />
+              <img src={BRANDING.logoApp} alt={BRANDING.appName} className="w-10 h-10 relative z-10 object-contain" />
             </div>
             <div>
               <h1 className="text-base font-black text-slate-800 tracking-tight leading-none">
-                Convivencia
+                {BRANDING.appName}
               </h1>
               <p className="text-[9px] font-bold text-brand-500 tracking-widest uppercase mt-0.5">
-                Escolar
+                {BRANDING.schoolName}
               </p>
             </div>
           </div>
@@ -275,11 +275,11 @@ export default function Sidebar({ mobileOpen = false, onClose = () => { } }) {
               <div className="flex items-center gap-3">
                 <div className="relative">
                   <div className="absolute inset-0 bg-accent-500 blur-md opacity-10 rounded-full"></div>
-                  <Logo size={32} className="relative z-10" />
+                  <img src={BRANDING.logoApp} alt={BRANDING.appName} className="w-8 h-8 relative z-10 object-contain" />
                 </div>
                 <div>
-                  <h1 className="text-sm font-black text-slate-800 tracking-tight leading-none">Convivencia</h1>
-                  <p className="text-[8px] font-bold text-slate-600 tracking-widest uppercase mt-0.5">Escolar</p>
+                  <h1 className="text-sm font-black text-slate-800 tracking-tight leading-none">{BRANDING.appName}</h1>
+                  <p className="text-[8px] font-bold text-slate-600 tracking-widest uppercase mt-0.5">{BRANDING.schoolName}</p>
                 </div>
               </div>
               <button onClick={onClose} className="p-2 rounded-full hover:bg-slate-100 text-slate-400">

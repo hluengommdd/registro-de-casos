@@ -7,7 +7,7 @@ import {
   Image,
   StyleSheet,
 } from '@react-pdf/renderer'
-import logoColegio from '../assets/generic_logo.png'
+import { BRANDING } from '../config/branding'
 
 const TIPOS_COLORS = {
   'Leve': '#10b981',
@@ -206,10 +206,10 @@ export default function InformeCasoDocument({ caso, seguimientos = [] }) {
         <View style={styles.header}>
           <View style={styles.headerText}>
             <Text style={styles.mainTitle}>INFORME DE GESTIÓN DE CONVIVENCIA ESCOLAR</Text>
-            <Text style={styles.subtitle}>Colegio de Prueba</Text>
+            <Text style={styles.subtitle}>{BRANDING.schoolName}</Text>
             <Text style={styles.emissionDate}>Fecha de emisión del informe: {formatDate(new Date())}</Text>
           </View>
-          <Image src={logoColegio} style={styles.logo} />
+          <Image src={BRANDING.logoPdf} style={styles.logo} />
         </View>
 
         {/* 1. IDENTIFICACIÓN DEL CASO */}

@@ -7,7 +7,7 @@ import {
   Image,
   StyleSheet,
 } from '@react-pdf/renderer'
-import logoColegio from '../assets/generic_logo.png'
+import { BRANDING } from '../config/branding'
 
 const styles = StyleSheet.create({
   page: { padding: 24, fontSize: 10, fontFamily: 'Helvetica' },
@@ -101,12 +101,12 @@ export default function EstadisticasDocument({
         <View style={styles.header}>
           <View style={styles.headerText}>
             <Text style={styles.title}>INFORME ESTADÍSTICO</Text>
-            <Text style={styles.subtitle}>Colegio de Prueba</Text>
+            <Text style={styles.subtitle}>{BRANDING.schoolName}</Text>
             <Text style={styles.small}>
               Fecha de emisión: {new Date().toLocaleDateString('es-CL')}
             </Text>
           </View>
-          <Image src={logoColegio} style={styles.logo} />
+          <Image src={BRANDING.logoPdf} style={styles.logo} />
         </View>
 
         {/* FILTROS APLICADOS */}
