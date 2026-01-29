@@ -1,0 +1,277 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --bg: #f6f7f8;
+    --panel: #ffffff;
+    --muted: #4b5563;
+    --brand: #0b1220; /* carbón frío más oscuro */
+    --accent: #25313b; /* azul grisáceo frío */
+    --glass-edge: rgba(11, 17, 32, 0.08);
+  }
+
+  html,
+  body,
+  #root {
+    height: 100%;
+    width: 100%;
+  }
+
+  body {
+    @apply font-sans text-slate-900 antialiased;
+    background: linear-gradient(180deg, var(--bg) 0%, #f1f5f9 100%);
+    background-attachment: fixed;
+    overflow: auto;
+    font-size: 15px;
+  }
+
+  /* Custom Scrollbar (subtil) */
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: rgba(11, 17, 32, 0.14);
+    border-radius: 9999px;
+  }
+}
+
+@layer components {
+  /* GLASS COMPONENTS */
+  .glass-panel {
+    @apply bg-white backdrop-blur-sm border rounded-2xl transition-all duration-300;
+    border: 1px solid rgba(11, 17, 32, 0.08);
+    box-shadow: 0 12px 34px rgba(2, 6, 23, 0.08);
+  }
+
+  .glass-panel-hover {
+    @apply hover:bg-white/80 hover:scale-[1.01] hover:shadow-lg hover:border-white/80;
+  }
+
+  .glass-card {
+    @apply bg-white border rounded-xl;
+    border: 1px solid rgba(11, 17, 32, 0.06);
+    box-shadow: 0 8px 20px rgba(2, 6, 23, 0.07);
+  }
+
+  /* BUTTONS ("Neumorphic" / Modern) */
+  .btn-primary {
+    @apply text-white font-semibold rounded-md transition-all duration-200;
+    background-color: var(--brand);
+    border: 1px solid rgba(2, 6, 23, 0.1);
+    box-shadow: 0 6px 18px rgba(2, 6, 23, 0.12);
+  }
+
+  .btn-secondary {
+    @apply bg-transparent text-slate-800 font-medium border border-transparent rounded-md hover:bg-slate-50 transition-all duration-150;
+    border: 1px solid rgba(11, 17, 32, 0.06);
+  }
+
+  .btn-ghost {
+    @apply text-slate-600 hover:bg-slate-100 hover:text-slate-900 rounded-lg transition-colors duration-200;
+  }
+
+  /* FORM ELEMENTS */
+  .input-glass {
+    @apply bg-white border border-slate-200 rounded-md px-3 py-2 outline-none transition-shadow duration-150 placeholder:text-slate-400;
+  }
+
+  /* TYPOGRAPHY */
+  .page-title {
+    @apply text-3xl font-extrabold tracking-tight;
+    color: var(--brand);
+  }
+
+  .section-title {
+    @apply text-lg font-semibold text-slate-800 flex items-center gap-2;
+  }
+
+  /* BADGES */
+  .badge-glass {
+    @apply px-2.5 py-0.5 rounded-full text-xs font-bold border shadow-sm;
+    border: 1px solid rgba(15, 23, 42, 0.04);
+  }
+}
+
+@layer utilities {
+  .text-shadow {
+    text-shadow: 0 1px 0 rgba(255, 255, 255, 0.03);
+  }
+
+  .animation-delay-200 {
+    animation-delay: 200ms;
+  }
+
+  .animation-delay-400 {
+    animation-delay: 400ms;
+  }
+}
+
+/* Helper para sidebar colapsada: ocultar labels */
+.sidebar-collapsed .sidebar-label {
+  display: none;
+}
+
+.sidebar-collapsed {
+  width: 5rem;
+}
+
+/* Animación para visualizer */
+@keyframes slideUpFade {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-slide-up {
+  animation: slideUpFade 320ms ease both;
+}
+
+.floating-hint {
+  position: fixed;
+  right: 2rem;
+  bottom: 10rem;
+  z-index: 50;
+}
+
+/* Allow embedded SVGs (charts) to overflow slightly for nicer axes/labels */
+.card svg {
+  overflow: visible;
+}
+
+.glass {
+  background: rgba(255, 255, 255, 0.98);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  border-bottom: 1px solid rgba(11, 17, 32, 0.06);
+}
+
+/* Duplicate btn-primary removed */
+
+/* Contenedor estándar para páginas */
+.container {
+  max-width: 1280px;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: 1.5rem;
+  padding-right: 1.5rem;
+}
+
+/* Ajustes finos de espaciado */
+.gutter-y {
+  margin-top: 1rem;
+  margin-bottom: 1rem;
+}
+
+.card p {
+  color: #24323b;
+  /* Slate-700 */
+  line-height: 1.6;
+}
+
+/* Tipografías y títulos */
+.page-title {
+  font-size: 1.875rem;
+  font-weight: 700;
+  letter-spacing: -0.025em;
+  color: #0f172a;
+}
+
+.section-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #1e293b;
+  letter-spacing: -0.01em;
+}
+
+/* Sombras suaves para elementos interactivos */
+.soft-shadow {
+  box-shadow:
+    0 4px 6px -1px rgba(0, 0, 0, 0.1),
+    0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+/* =========================
+   ESTILOS DE IMPRESIÓN
+========================== */
+@media print {
+  body {
+    background: white;
+  }
+
+  /* Ocultar botones, navegación y acciones */
+  button,
+  nav,
+  aside {
+    display: none !important;
+  }
+
+  /* Contenedor principal */
+  .print-container {
+    padding: 0 !important;
+  }
+
+  /* Header institucional */
+  .print-header {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    border-bottom: 2px solid #000;
+    padding-bottom: 12px;
+    margin-bottom: 24px;
+  }
+
+  .print-header img {
+    height: 60px;
+  }
+
+  .page-title {
+    font-size: 1.875rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    color: var(--brand);
+  }
+  .section-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: rgba(11, 17, 32, 0.9);
+    letter-spacing: -0.01em;
+  }
+
+  .print-title {
+    font-size: 18px;
+    font-weight: bold;
+  }
+
+  .print-section {
+    margin-bottom: 20px;
+  }
+
+  .print-section h2 {
+    font-size: 14px;
+    font-weight: bold;
+    margin-bottom: 6px;
+    border-bottom: 1px solid #000;
+  }
+
+  .print-footer {
+    margin-top: 40px;
+    font-size: 12px;
+    text-align: right;
+  }
+}

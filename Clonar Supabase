@@ -1,0 +1,251 @@
+Aquí tienes un **runbook reutilizable** (copiar/pegar) para **clonar el mismo Supabase** (solo esquema o esquema+datos), dejarlo operativo en Vercel, y un plan seguro para **activar RLS** probando `anon` y `authenticated`.
+
+---
+
+# Runbook: Clonar Supabase (ORIGEN → DESTINO)
+
+## 0) Prerrequisitos en tu PC (Windows)
+
+* `psql`, `pg_dump`, `pg_restore` instalados (PostgreSQL client tools)
+* Variables de conexión:
+
+```powershell
+$ORIG = "postgresql://postgres:PASS_ORIGEN@db.<ref_origen>.supabase.co:5432/postgres?sslmode=require"
+$DEST = "postgresql://postgres:PASS_DESTINO@db.<ref_destino>.supabase.co:5432/postgres?sslmode=require"
+```
+
+> Recomendación: no pegues passwords en chats; rota passwords si se filtraron.
+
+---
+
+## 1) DESTINO: borrar `public` completamente (limpieza “real”)
+
+**Dónde:** Supabase DESTINO → SQL Editor
+
+```sql
+DROP SCHEMA IF EXISTS public CASCADE;
+```
+
+*(Esto deja el destino listo para restaurar sin choques.)*
+
+---
+
+## 2) ORIGEN: crear dump
+
+### A) Clon SIN datos (solo estructura)
+
+En PowerShell:
+
+```powershell
+cd C:\clon-supabase
+
+pg_dump `
+  $ORIG `
+  -Fc `
+  --schema=public `
+  --schema-only `
+  --no-owner `
+  --no-privileges `
+  -f public_schema.dump
+```
+
+### B) Clon CON datos (si algún día lo necesitas)
+
+```powershell
+pg_dump `
+  $ORIG `
+  -Fc `
+  --schema=public `
+  --no-owner `
+  --no-privileges `
+  -f public_full.dump
+```
+
+---
+
+## 3) DESTINO: restaurar dump
+
+### A) Restaurar SIN datos
+
+```powershell
+pg_restore `
+  --exit-on-error `
+  --no-owner `
+  --no-privileges `
+  -d $DEST `
+  public_schema.dump
+```
+
+### B) Restaurar CON datos
+
+```powershell
+pg_restore `
+  --exit-on-error `
+  --no-owner `
+  --no-privileges `
+  -d $DEST `
+  public_full.dump
+```
+
+---
+
+## 4) DESTINO: GRANTs para que la app funcione (PostgREST / supabase-js)
+
+**Dónde:** Supabase DESTINO → SQL Editor
+(Este paso es el que te arregló el “Desconectado / 401 / permission denied”)
+
+```sql
+-- Permite usar el schema
+grant usage on schema public to anon, authenticated;
+
+-- Permisos CRUD para API
+grant select, insert, update, delete
+on all tables in schema public
+to anon, authenticated;
+
+-- Permisos para IDs/serials/identity
+grant usage, select, update
+on all sequences in schema public
+to anon, authenticated;
+
+-- Si tienes funciones usadas por vistas/queries
+grant execute
+on all functions in schema public
+to anon, authenticated;
+
+-- Para que lo que crees en el futuro herede permisos
+alter default privileges in schema public
+grant select, insert, update, delete on tables
+to anon, authenticated;
+
+alter default privileges in schema public
+grant usage, select, update on sequences
+to anon, authenticated;
+
+alter default privileges in schema public
+grant execute on functions
+to anon, authenticated;
+```
+
+---
+
+## 5) Verificación rápida (PC)
+
+```powershell
+psql $DEST -c "\dt public.*"
+psql $DEST -c "\dv public.*"
+```
+
+---
+
+## 6) Vercel: apuntar al DESTINO (obligatorio)
+
+Vercel → Project → Settings → Environment Variables
+
+* `VITE_SUPABASE_URL` = `https://<ref_destino>.supabase.co`
+* `VITE_SUPABASE_ANON_KEY` = anon key del DESTINO
+
+Luego **Redeploy**.
+
+---
+
+# Runbook: Activar RLS (más adelante) con pruebas `anon` y `authenticated`
+
+## A) Estrategia segura
+
+1. Primero en **staging** (destino)
+2. Pruebas con:
+
+   * **anon** (sin login)
+   * **authenticated** (usuario logueado)
+3. Recién después, replicar en producción
+
+---
+
+## B) Activar RLS (por tabla)
+
+**Dónde:** Supabase STAGING → SQL Editor
+
+```sql
+ALTER TABLE public.cases ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.involucrados ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.students ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.case_followups ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.followup_evidence ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.conduct_catalog ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.conduct_types ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.stage_sla ENABLE ROW LEVEL SECURITY;
+```
+
+> Importante: al activar RLS, si no hay policies, **por defecto se bloquea todo** para `anon/authenticated`.
+
+---
+
+## C) “Test harness” para probar permisos sin adivinar (recomendado)
+
+### 1) Consigue un JWT real de usuario (authenticated)
+
+* Inicia sesión en tu app en staging
+* Copia el `access_token` (en localStorage o en el objeto de sesión)
+
+### 2) Prueba `anon` (sin token)
+
+En PowerShell (reemplaza `ANON_KEY`):
+
+```powershell
+curl -i `
+  -H "apikey: ANON_KEY" `
+  -H "Authorization: Bearer ANON_KEY" `
+  "https://<ref_destino>.supabase.co/rest/v1/cases?select=id&limit=1"
+```
+
+### 3) Prueba `authenticated` (con access_token)
+
+```powershell
+curl -i `
+  -H "apikey: ANON_KEY" `
+  -H "Authorization: Bearer ACCESS_TOKEN_DEL_USUARIO" `
+  "https://<ref_destino>.supabase.co/rest/v1/cases?select=id&limit=1"
+```
+
+**Cómo leer resultados:**
+
+* `200` / `206` → OK
+* `401` → token/headers mal
+* `403` o `{ code: 42501 / permission denied }` → GRANT/policy bloqueando
+* `0 filas` con `200` puede ser normal por policy (filtrado)
+
+---
+
+## D) Tip para que tu UI “health” no se rompa al activar RLS
+
+Crea una tabla “ping” y dale SELECT a `anon/authenticated` (sin exponer datos sensibles):
+
+```sql
+create table if not exists public.health_ping (id int primary key);
+insert into public.health_ping (id) values (1)
+on conflict (id) do nothing;
+
+grant select on public.health_ping to anon, authenticated;
+```
+
+Y en tu frontend, usa esa tabla para el check de salud.
+
+---
+
+# Checklist final “Clon listo para Vercel”
+
+* [ ] `public` restaurado (tablas + vistas)
+* [ ] GRANTs aplicados a `anon/authenticated`
+* [ ] Vercel envs apuntan a DESTINO + redeploy
+* [ ] App pasa a “conectado”
+* [ ] (Más adelante) RLS probado en staging con `anon` y `authenticated`
+
+---
+
+Si quieres, te lo dejo aún más “industrial”: te armo **2 archivos** para guardar en el repo:
+
+* `runbooks/clone-supabase.md`
+* `runbooks/grants_public.sql`
+
+y así lo reutilizas tal cual cada vez.
