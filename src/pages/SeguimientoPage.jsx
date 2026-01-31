@@ -29,7 +29,11 @@ export default function SeguimientoPage({
   const { push } = useToast();
 
   const { followups: seguimientos, loading, refresh } = useSeguimientos(caseId);
-  const { stageSlaMap } = useDueProcess(caseId, refreshKey);
+  const { stages: dueStages, stageSlaMap } = useDueProcess(caseId, refreshKey);
+  const effectiveStages = useMemo(
+    () => (dueStages && dueStages.length ? dueStages : DUE_PROCESS_STAGES),
+    [dueStages],
+  );
 
   useEffect(() => {
     let cancelled = false;
@@ -60,7 +64,7 @@ export default function SeguimientoPage({
 
   const grouped = useMemo(() => {
     const acc = {};
-    for (const stage of DUE_PROCESS_STAGES) acc[stage] = [];
+    for (const stage of effectiveStages) acc[stage] = [];
     for (const seg of seguimientos || []) {
       const key = seg.fields?.Etapa_Debido_Proceso || seg.process_stage;
       if (!acc[key]) acc[key] = [];
@@ -75,7 +79,7 @@ export default function SeguimientoPage({
       );
     }
     return acc;
-  }, [seguimientos]);
+  }, [seguimientos, effectiveStages]);
 
   const completedStageKeys = useMemo(() => {
     const set = new Set();
@@ -88,11 +92,11 @@ export default function SeguimientoPage({
   }, [seguimientos]);
 
   const currentStageKey = useMemo(() => {
-    for (const stage of DUE_PROCESS_STAGES) {
+    for (const stage of effectiveStages) {
       if (!completedStageKeys.includes(stage)) return stage;
     }
-    return DUE_PROCESS_STAGES[DUE_PROCESS_STAGES.length - 1] || null;
-  }, [completedStageKeys]);
+    return effectiveStages[effectiveStages.length - 1] || null;
+  }, [completedStageKeys, effectiveStages]);
 
   function irACierreCaso() {
     if (!caseId) return;
@@ -104,7 +108,7 @@ export default function SeguimientoPage({
       <div className="max-w-7xl mx-auto space-y-6">
         <div className="flex items-center justify-end gap-3">
           <button
-            onClick={() => setStageToAdd(currentStageKey || DUE_PROCESS_STAGES[0])}
+            onClick={() => setStageToAdd(currentStageKey || effectiveStages[0])}
             className="px-4 py-2 rounded-xl bg-brand-600 text-white text-sm font-semibold shadow-sm hover:bg-brand-700"
           >
             Registrar Acción
@@ -121,7 +125,7 @@ export default function SeguimientoPage({
 
         <div className="bg-white rounded-xl shadow-sm border p-4">
           <ProcesoVisualizer
-            stages={DUE_PROCESS_STAGES}
+            stages={effectiveStages}
             currentStageKey={currentStageKey}
             completedStageKeys={completedStageKeys}
             stageSlaMap={stageSlaMap}
@@ -131,7 +135,7 @@ export default function SeguimientoPage({
         <div className="grid grid-cols-12 gap-6">
           {/* Bitácora */}
           <section className="col-span-12 lg:col-span-8 space-y-4">
-            {DUE_PROCESS_STAGES.map((stage) => {
+            {effectiveStages.map((stage) => {
               const isOpen = openStage === stage;
               const count = grouped?.[stage]?.length || 0;
 
@@ -258,6 +262,7 @@ export default function SeguimientoPage({
               <SeguimientoForm
                 caseId={caseId}
                 defaultStage={stageToAdd}
+                stages={effectiveStages}
                 onSaved={() => {
                   setStageToAdd(null);
                   refresh();

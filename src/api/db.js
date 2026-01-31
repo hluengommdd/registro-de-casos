@@ -6,6 +6,22 @@ import { getEvidencePublicUrl, getEvidenceSignedUrl } from './evidence';
 
 const EMPTY = '';
 const DEFAULT_STUDENT = 'N/A';
+const CASE_LIST_SELECT = `
+  id,
+  created_at,
+  incident_date,
+  incident_time,
+  status,
+  conduct_type,
+  conduct_category,
+  short_description,
+  course_incident,
+  responsible,
+  responsible_role,
+  closed_at,
+  seguimiento_started_at,
+  students(first_name, last_name, rut)
+`;
 
 /**
  * Obtener lista única de responsables desde case_followups
@@ -228,6 +244,47 @@ export async function getCases(status = null) {
     return (data || []).map(mapCaseRow);
   } catch (error) {
     logger.error('Error fetching cases:', error);
+    throw error;
+  }
+}
+
+/**
+ * Obtener casos activos con select reducido (mejor perf en listados)
+ * @returns {Promise<Array>}
+ */
+export async function getActiveCasesLite() {
+  try {
+    const { data, error } = await withRetry(() =>
+      supabase
+        .from('cases')
+        .select(CASE_LIST_SELECT)
+        .neq('status', 'Cerrado'),
+    );
+    if (error) throw error;
+    return (data || []).map(mapCaseRow);
+  } catch (error) {
+    logger.error('Error fetching active cases (lite):', error);
+    throw error;
+  }
+}
+
+/**
+ * Obtener casos por IDs con select reducido (para alertas/sidebars)
+ * @param {Array<string>} caseIds
+ * @returns {Promise<Array>}
+ */
+export async function getCasesByIdsLite(caseIds = []) {
+  try {
+    const ids = (caseIds || []).filter(Boolean);
+    if (ids.length === 0) return [];
+
+    const { data, error } = await withRetry(() =>
+      supabase.from('cases').select(CASE_LIST_SELECT).in('id', ids),
+    );
+    if (error) throw error;
+    return (data || []).map(mapCaseRow);
+  } catch (error) {
+    logger.error('Error fetching cases by ids (lite):', error);
     throw error;
   }
 }
@@ -1096,50 +1153,4 @@ export async function getInvolucrados(caseId) {
 
   if (error) throw error;
   return data || [];
-}
-
-
-
-
-
-export async function uploadEvidenceFiles(caseId, followupId, files) {
-  const uploaded = [];
-  for (const file of files) {
-    const path = `cases/${caseId}/followups/${followupId}/${Date.now()}_${file.name}`;
-    const { error: upErr } = await supabase.storage
-      .from("evidencias")
-      .upload(path, file);
-    if (upErr) throw upErr;
-
-    const { data: pub } = supabase.storage.from("evidencias").getPublicUrl(path);
-
-    const { error: metaErr } = await supabase.from("followup_evidence").insert({
-      case_id: caseId,
-      followup_id: followupId,
-      storage_bucket: "evidencias",
-      storage_path: path,
-      file_name: file.name,
-      content_type: file.type,
-      file_size: file.size,
-    });
-    if (metaErr) throw metaErr;
-
-    uploaded.push({ filename: file.name, url: pub.publicUrl });
-  }
-  return uploaded;
-}
-
-export async function getFollowupEvidence(followupId) {
-  const { data, error } = await supabase
-    .from("followup_evidence")
-    .select("*")
-    .eq("followup_id", followupId);
-  if (error) throw error;
-
-  return data.map((f) => {
-    const { data: pub } = supabase.storage
-      .from("evidencias")
-      .getPublicUrl(f.storage_path);
-    return { ...f, url: pub.publicUrl };
-  });
 }

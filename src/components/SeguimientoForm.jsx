@@ -10,7 +10,12 @@ function todayISODate() {
   return new Date().toISOString().slice(0, 10);
 }
 
-export default function SeguimientoForm({ caseId, defaultStage, onSaved }) {
+export default function SeguimientoForm({
+  caseId,
+  defaultStage,
+  stages = DUE_PROCESS_STAGES,
+  onSaved,
+}) {
   const { push } = useToast();
   const [responsables, setResponsables] = useState([]);
   const [submitting, setSubmitting] = useState(false);
@@ -125,7 +130,7 @@ export default function SeguimientoForm({ caseId, defaultStage, onSaved }) {
             required
           >
             <option value="">Selecciona</option>
-            {DUE_PROCESS_STAGES.map((s) => (
+            {stages.map((s) => (
               <option key={s} value={s}>{s}</option>
             ))}
           </select>

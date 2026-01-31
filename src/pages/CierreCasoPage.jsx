@@ -9,6 +9,7 @@ import { emitDataUpdated } from '../utils/refreshBus';
 import { getStudentName } from '../utils/studentName';
 import { useToast } from '../hooks/useToast';
 import { logger } from '../utils/logger';
+import { useDueProcess } from '../hooks/useDueProcess';
 
 const CIERRE_STEPS = [
   { key: 'validacion', label: 'Validación' },
@@ -75,6 +76,18 @@ export default function CierreCasoPage() {
   const { caseId } = useParams();
   const navigate = useNavigate();
   const { push } = useToast();
+  const { stages: dueStages } = useDueProcess(caseId);
+  const effectiveStages = useMemo(
+    () => (dueStages && dueStages.length ? dueStages : DUE_PROCESS_STAGES),
+    [dueStages],
+  );
+  const closeStageKey = useMemo(
+    () =>
+      effectiveStages && effectiveStages.length
+        ? effectiveStages[effectiveStages.length - 1]
+        : '8. Monitoreo',
+    [effectiveStages],
+  );
 
   const [activeStep, setActiveStep] = useState('validacion');
   const [loading, setLoading] = useState(true);
@@ -125,20 +138,20 @@ export default function CierreCasoPage() {
   const validacionItems = useMemo(() => {
     // Mapeo simple: consideramos validado si la etapa tiene al menos 1 acción o está completada.
     return [
-      { label: 'Denuncia Inicial', stage: DUE_PROCESS_STAGES[0] },
-      { label: 'Notificación a las Partes', stage: DUE_PROCESS_STAGES[1] },
-      { label: 'Entrevista con el Estudiante', stage: DUE_PROCESS_STAGES[3] || DUE_PROCESS_STAGES[2] },
-      { label: 'Recepción de Pruebas', stage: DUE_PROCESS_STAGES[2] },
-      { label: 'Reunión con Acudientes', stage: DUE_PROCESS_STAGES[1] },
-      { label: 'Análisis de Evidencia', stage: DUE_PROCESS_STAGES[4] || DUE_PROCESS_STAGES[2] },
-      { label: 'Descargos', stage: DUE_PROCESS_STAGES[3] || DUE_PROCESS_STAGES[2] },
-      { label: 'Resolución de Instancia', stage: DUE_PROCESS_STAGES[5] || DUE_PROCESS_STAGES[4] },
+      { label: 'Denuncia Inicial', stage: effectiveStages[0] },
+      { label: 'Notificación a las Partes', stage: effectiveStages[1] },
+      { label: 'Entrevista con el Estudiante', stage: effectiveStages[3] || effectiveStages[2] },
+      { label: 'Recepción de Pruebas', stage: effectiveStages[2] },
+      { label: 'Reunión con Acudientes', stage: effectiveStages[1] },
+      { label: 'Análisis de Evidencia', stage: effectiveStages[4] || effectiveStages[2] },
+      { label: 'Descargos', stage: effectiveStages[3] || effectiveStages[2] },
+      { label: 'Resolución de Instancia', stage: effectiveStages[5] || effectiveStages[4] },
     ].map((it) => {
       const hasAny = (seguimientos || []).some((s) => (s.process_stage || s.fields?.Etapa_Debido_Proceso) === it.stage);
       const ok = completedStages.has(it.stage) || hasAny;
       return { ...it, ok };
     });
-  }, [completedStages, seguimientos]);
+  }, [completedStages, seguimientos, effectiveStages]);
 
   useEffect(() => {
     let cancelled = false;
@@ -257,7 +270,7 @@ export default function CierreCasoPage() {
         case_id: caseId,
         action_date: new Date().toISOString().slice(0, 10),
         action_type: 'Monitoreo',
-        process_stage: '8. Monitoreo',
+        process_stage: closeStageKey,
         stage_status: 'Completada',
         detail: 'Cierre formal del caso',
         observations: descripcionCierre || null,

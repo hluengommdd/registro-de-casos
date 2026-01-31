@@ -591,7 +591,9 @@ export default function NuevoCasoModal({ onClose, onSaved }) {
 
             {/* Registro (responsable) */}
             <div className="mt-8">
-              <h3 className="text-sm font-semibold mb-2">Registro</h3>
+              <h3 className="text-sm font-semibold mb-2">
+                Responsable del Registro
+              </h3>
               <div className="rounded-2xl border border-slate-200 bg-white px-4 py-4">
                 <p className="text-sm text-slate-600 mb-4">
                   Define quién reporta el caso. Esto queda visible en el detalle y en listados.
@@ -600,7 +602,7 @@ export default function NuevoCasoModal({ onClose, onSaved }) {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                   <div>
                     <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">
-                      Responsable del registro
+                      Responsable del Registro
                     </label>
                     <input
                       type="text"
