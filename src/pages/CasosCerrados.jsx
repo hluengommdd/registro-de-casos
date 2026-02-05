@@ -13,8 +13,7 @@ import { clearCache } from '../utils/queryCache';
 import { onDataUpdated } from '../utils/refreshBus';
 import InlineError from '../components/InlineError';
 import usePersistedState from '../hooks/usePersistedState';
-
-const ROW_HEIGHT = 132;
+import useWindowSize from '../hooks/useWindowSize';
 
 export default function CasosCerrados() {
   const [casos, setCasos] = useState([]);
@@ -28,6 +27,7 @@ export default function CasosCerrados() {
   const [page, setPage] = usePersistedState('casosCerrados.page', 1);
   const navigate = useNavigate();
   const { push } = useToast();
+  const { width, height } = useWindowSize();
 
   const {
     data: closedCases,
@@ -185,7 +185,11 @@ export default function CasosCerrados() {
     );
   }
 
-  const listHeight = Math.min(560, Math.max(280, casos.length * ROW_HEIGHT));
+  const rowHeight = width && width < 640 ? 160 : 132;
+  const listHeight = Math.min(
+    640,
+    Math.max(260, Math.floor((height || 800) * 0.55)),
+  );
 
   return (
     <div className="h-full p-2">
@@ -278,7 +282,7 @@ export default function CasosCerrados() {
             <List
               height={listHeight}
               itemCount={casos.length}
-              itemSize={ROW_HEIGHT}
+              itemSize={rowHeight}
               width="100%"
             >
               {Row}

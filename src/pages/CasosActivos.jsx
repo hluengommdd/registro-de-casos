@@ -15,8 +15,7 @@ import { clearCache } from '../utils/queryCache';
 import { parseLocalDate } from '../utils/dateUtils';
 import InlineError from '../components/InlineError';
 import usePersistedState from '../hooks/usePersistedState';
-
-const ROW_HEIGHT = 156;
+import useWindowSize from '../hooks/useWindowSize';
 
 export default function CasosActivos() {
   const navigate = useNavigate();
@@ -37,6 +36,7 @@ export default function CasosActivos() {
     10,
   );
   const [page, setPage] = usePersistedState('casosActivos.page', 1);
+  const { width, height } = useWindowSize();
 
   const {
     data: casesPage,
@@ -317,7 +317,11 @@ export default function CasosActivos() {
     );
   }
 
-  const listHeight = Math.min(620, Math.max(320, casos.length * ROW_HEIGHT));
+  const rowHeight = width && width < 640 ? 190 : 156;
+  const listHeight = Math.min(
+    720,
+    Math.max(280, Math.floor((height || 800) * 0.6)),
+  );
   const loading = loadingCases || loadingPlazos;
 
   return (
@@ -485,7 +489,7 @@ export default function CasosActivos() {
             <List
               height={listHeight}
               itemCount={casos.length}
-              itemSize={ROW_HEIGHT}
+              itemSize={rowHeight}
               width="100%"
             >
               {Row}
