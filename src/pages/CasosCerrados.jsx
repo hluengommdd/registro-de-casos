@@ -185,7 +185,8 @@ export default function CasosCerrados() {
     );
   }
 
-  const rowHeight = width && width < 640 ? 160 : 132;
+  const rowHeight =
+    width && width < 640 ? 160 : width && width < 1024 ? 144 : 132;
   const listHeight = Math.min(
     640,
     Math.max(260, Math.floor((height || 800) * 0.55)),

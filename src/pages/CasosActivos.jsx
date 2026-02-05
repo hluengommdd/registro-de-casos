@@ -317,10 +317,11 @@ export default function CasosActivos() {
     );
   }
 
-  const rowHeight = width && width < 640 ? 190 : 156;
+  const rowHeight =
+    width && width < 640 ? 190 : width && width < 1024 ? 170 : 156;
   const listHeight = Math.min(
     720,
-    Math.max(280, Math.floor((height || 800) * 0.6)),
+    Math.max(260, Math.floor((height || 800) * 0.55)),
   );
   const loading = loadingCases || loadingPlazos;
 
