@@ -208,8 +208,8 @@ export default function TeamComments({
             <button
               type="button"
               onClick={() => toggleUrgent(node)}
-              className={`p-1 rounded-full ${
-                node.is_urgent ? 'text-amber-500' : 'text-slate-300'
+              className={`p-1 rounded-full tap-target ${
+                node.is_urgent ? 'text-amber-500' : 'text-slate-400'
               }`}
               title="Marcar importante"
               aria-label="Marcar importante"
@@ -233,7 +233,7 @@ export default function TeamComments({
                   className="inline-flex items-center gap-2 px-2.5 py-1.5 rounded-full border border-slate-200 bg-white text-xs text-slate-600 hover:shadow"
                 >
                   <span className="truncate max-w-[180px]">{a.file_name}</span>
-                  <span className="text-slate-400">
+                  <span className="text-slate-500">
                     {formatSize(a.file_size)}
                   </span>
                 </a>
@@ -253,7 +253,7 @@ export default function TeamComments({
                 <CornerDownRight size={14} />
                 Responder
               </button>
-              <span className="text-slate-400">
+              <span className="text-slate-500">
                 {formatDate(node.created_at, true)}
               </span>
             </div>

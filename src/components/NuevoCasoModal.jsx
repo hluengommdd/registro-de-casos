@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { createCase, addInvolucrado } from '../api/db';
 import { logger } from '../utils/logger';
 import { supabase } from '../api/supabaseClient';
@@ -7,6 +7,7 @@ import useConductCatalog from '../hooks/useConductCatalog';
 import { CARGOS } from '../constants/cargos';
 
 export default function NuevoCasoModal({ onClose, onSaved }) {
+  const firstFieldRef = useRef(null);
   const [fecha, setFecha] = useState('');
   const [hora, setHora] = useState('');
   const [curso, setCurso] = useState('');
@@ -87,6 +88,11 @@ export default function NuevoCasoModal({ onClose, onSaved }) {
 
     cargarEstudiantes();
   }, [curso]);
+
+  useEffect(() => {
+    // Focus first field when opening the modal
+    firstFieldRef.current?.focus();
+  }, []);
 
   // Cuando se selecciona un estudiante, autocompletar el campo de involucrados
   useEffect(() => {
@@ -275,7 +281,12 @@ export default function NuevoCasoModal({ onClose, onSaved }) {
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
+      role="dialog"
+      aria-modal="true"
+      aria-label="Nuevo caso"
+    >
       <div className="w-full max-w-5xl mx-auto relative space-y-4 max-h-[90vh]">
         <div className="bg-white rounded-2xl shadow-2xl border border-slate-200 p-0 relative flex flex-col h-full max-h-[90vh] overflow-hidden">
           {guardando && (
@@ -292,7 +303,7 @@ export default function NuevoCasoModal({ onClose, onSaved }) {
             <button
               type="button"
               onClick={onClose}
-              className="p-2 rounded-lg hover:bg-slate-100 text-slate-500 hover:text-slate-700"
+              className="p-2 rounded-lg hover:bg-slate-100 text-slate-500 hover:text-slate-700 tap-target"
               aria-label="Cerrar"
             >
               ✕
@@ -308,6 +319,7 @@ export default function NuevoCasoModal({ onClose, onSaved }) {
                   Fecha del incidente
                 </label>
                 <input
+                  ref={firstFieldRef}
                   type="date"
                   value={fecha}
                   onChange={(e) => setFecha(e.target.value)}
@@ -417,7 +429,7 @@ export default function NuevoCasoModal({ onClose, onSaved }) {
                 </div>
               )}
               {error && (
-                <div className="mt-2 border bg-red-50 text-red-700 p-3 rounded text-sm flex items-center justify-between">
+                <div className="mt-2 border bg-red-100 text-red-800 p-3 rounded text-sm flex items-center justify-between">
                   <div>Error cargando catálogo: {error}</div>
                   <div>
                     <button
@@ -578,7 +590,7 @@ export default function NuevoCasoModal({ onClose, onSaved }) {
                             prev.filter((_, idx) => idx !== i),
                           )
                         }
-                        className="text-slate-400 hover:text-slate-700"
+                        className="text-slate-500 hover:text-slate-700"
                         aria-label="Quitar"
                       >
                         ✕
@@ -601,7 +613,7 @@ export default function NuevoCasoModal({ onClose, onSaved }) {
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                   <div>
-                    <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">
+                    <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">
                       Responsable del Registro
                     </label>
                     <input
@@ -617,7 +629,7 @@ export default function NuevoCasoModal({ onClose, onSaved }) {
                   </div>
 
                   <div>
-                    <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">
+                    <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">
                       Rol / Cargo
                     </label>
                     <select

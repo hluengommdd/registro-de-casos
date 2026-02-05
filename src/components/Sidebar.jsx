@@ -121,7 +121,7 @@ export default function Sidebar({ mobileOpen = false, onClose = () => {} }) {
             aria-label={collapsed ? 'Expandir sidebar' : 'Colapsar sidebar'}
             onClick={() => setCollapsed((s) => !s)}
             className={`
-              relative z-30 p-1.5 rounded-lg bg-white/50 hover:bg-white text-slate-500 hover:text-accent-600 
+              relative z-30 p-1.5 rounded-lg bg-white/50 hover:bg-white text-slate-500 hover:text-accent-600 tap-target
               transition-all shadow-sm border border-slate-100 hover:border-slate-200 
               hover:scale-110 active:scale-95
               ${collapsed ? 'mx-auto' : ''}
@@ -138,7 +138,7 @@ export default function Sidebar({ mobileOpen = false, onClose = () => {} }) {
         {/* NAV */}
         <nav className="flex-1 py-2.5 space-y-0.5 overflow-y-auto no-scrollbar">
           <p
-            className={`px-6 text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 transition-opacity ${collapsed ? 'hidden' : 'block'}`}
+            className={`px-6 text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1.5 transition-opacity ${collapsed ? 'hidden' : 'block'}`}
           >
             Menu
           </p>
@@ -204,7 +204,7 @@ export default function Sidebar({ mobileOpen = false, onClose = () => {} }) {
               {!collapsed && (
                 <ChevronDown
                   size={16}
-                  className={`transition-transform duration-300 text-slate-400 ${expandedSeguimientos ? 'rotate-180' : ''}`}
+                  className={`transition-transform duration-300 text-slate-500 ${expandedSeguimientos ? 'rotate-180' : ''}`}
                 />
               )}
             </button>
@@ -273,14 +273,14 @@ export default function Sidebar({ mobileOpen = false, onClose = () => {} }) {
 
           <div className="pt-4 mt-2 border-t border-slate-100 mx-4">
             <p
-              className={`text-xs font-bold text-slate-400 uppercase tracking-widest mb-2 transition-opacity ${collapsed ? 'hidden' : 'block'}`}
+              className={`text-xs font-bold text-slate-500 uppercase tracking-widest mb-2 transition-opacity ${collapsed ? 'hidden' : 'block'}`}
             >
               Gestión
             </p>
             <NavLink
               to="/alertas"
               className={({ isActive }) =>
-                `flex items-center gap-3 px-4 py-3 -mx-1 rounded-xl text-sm font-medium transition-all duration-300 relative overflow-hidden ${isActive ? 'bg-red-50 text-red-700 ring-1 ring-red-100' : 'text-slate-500 hover:bg-red-50/50 hover:text-red-700'}`
+                `flex items-center gap-3 px-4 py-3 -mx-1 rounded-xl text-sm font-medium transition-all duration-300 relative overflow-hidden ${isActive ? 'bg-red-100 text-red-800 ring-1 ring-red-200' : 'text-slate-500 hover:bg-red-50/50 hover:text-red-700'}`
               }
             >
               <AlertCircle size={18} className="text-red-500" />
@@ -346,7 +346,7 @@ export default function Sidebar({ mobileOpen = false, onClose = () => {} }) {
               </div>
               <button
                 onClick={onClose}
-                className="p-2 rounded-full hover:bg-slate-100 text-slate-400"
+                className="p-2 rounded-full hover:bg-slate-100 text-slate-500"
               >
                 <X size={20} />
               </button>
@@ -354,7 +354,7 @@ export default function Sidebar({ mobileOpen = false, onClose = () => {} }) {
 
             {/* Mobile Nav Content */}
             <nav className="flex-1 py-4 space-y-1 overflow-y-auto no-scrollbar">
-              <p className="px-6 text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">
+              <p className="px-6 text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2">
                 Menu
               </p>
 
@@ -396,7 +396,7 @@ export default function Sidebar({ mobileOpen = false, onClose = () => {} }) {
                   </span>
                   <ChevronDown
                     size={16}
-                    className={`transition-transform duration-300 text-slate-400 ${expandedSeguimientos ? 'rotate-180' : ''}`}
+                    className={`transition-transform duration-300 text-slate-500 ${expandedSeguimientos ? 'rotate-180' : ''}`}
                   />
                 </button>
 
@@ -417,7 +417,7 @@ export default function Sidebar({ mobileOpen = false, onClose = () => {} }) {
                         </NavLink>
                       ))
                     ) : (
-                      <div className="text-[10px] text-slate-400 px-3 py-2 italic">
+                      <div className="text-[10px] text-slate-500 px-3 py-2 italic">
                         Sin casos activos
                       </div>
                     )}
@@ -449,13 +449,13 @@ export default function Sidebar({ mobileOpen = false, onClose = () => {} }) {
 
               {/* Gestión */}
               <div className="pt-4 mt-2 border-t border-slate-100 mx-5">
-                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">
+                <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2">
                   Gestión
                 </p>
                 <NavLink
                   to="/alertas"
                   className={({ isActive }) =>
-                    `flex items-center gap-3 px-3 py-2 rounded-xl text-[13px] font-medium transition-all ${isActive ? 'bg-red-50 text-red-700 ring-1 ring-red-100' : 'text-slate-500 hover:bg-red-50/50 hover:text-red-700'}`
+                    `flex items-center gap-3 px-3 py-2 rounded-xl text-[13px] font-medium transition-all ${isActive ? 'bg-red-100 text-red-800 ring-1 ring-red-200' : 'text-slate-500 hover:bg-red-50/50 hover:text-red-700'}`
                   }
                   onClick={onClose}
                 >
@@ -478,7 +478,7 @@ export default function Sidebar({ mobileOpen = false, onClose = () => {} }) {
                   <p className="text-[11px] font-bold text-slate-700 leading-none">
                     Usuario Sistema
                   </p>
-                  <p className="text-[9px] text-slate-400 mt-1">
+                  <p className="text-[9px] text-slate-500 mt-1">
                     Convivencia Escolar
                   </p>
                 </div>

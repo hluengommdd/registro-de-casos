@@ -22,6 +22,60 @@ const CASE_LIST_SELECT = `
   seguimiento_started_at,
   students(first_name, last_name, rut)
 `;
+const CONTROL_UNIFICADO_SELECT = `
+  tipo,
+  followup_id,
+  case_id,
+  legacy_case_number,
+  estado_caso,
+  tipificacion_conducta,
+  fecha_incidente,
+  curso_incidente,
+  fecha,
+  tipo_accion,
+  estado_etapa,
+  responsable,
+  detalle,
+  etapa_debido_proceso,
+  descripcion,
+  fecha_plazo,
+  dias_restantes,
+  alerta_urgencia,
+  stage_num_from,
+  days_to_due,
+  student_id,
+  estudiante,
+  estudiante_rut,
+  course,
+  level
+`;
+const CASE_SELECT_FULL = `
+  id,
+  student_id,
+  legacy_case_number,
+  incident_date,
+  incident_time,
+  course_incident,
+  conduct_type,
+  conduct_category,
+  short_description,
+  status,
+  created_at,
+  updated_at,
+  closed_at,
+  indagacion_start_date,
+  indagacion_due_date,
+  seguimiento_started_at,
+  due_process_closed_at,
+  responsible,
+  responsible_role,
+  final_resolution_text,
+  final_disciplinary_measure,
+  closed_by_name,
+  closed_by_role,
+  final_pdf_storage_path,
+  students(first_name, last_name, rut)
+`;
 
 /**
  * Obtener lista única de responsables desde case_followups
@@ -71,7 +125,6 @@ function mapCaseRow(row) {
       Responsable_Registro: row.responsible || EMPTY,
       Rol_Responsable: row.responsible_role || EMPTY,
       Acciones_Tomadas: EMPTY,
-      Apoderado_Notificado: Boolean(row.guardian_notified),
       Fecha_Creacion: row.created_at || EMPTY,
       Fecha_Cierre: row.closed_at,
     },
@@ -100,11 +153,6 @@ export function buildCaseUpdate(fields = {}) {
   const updates = {};
   if (fields.Estudiante_ID !== undefined)
     updates.student_id = fields.Estudiante_ID || null;
-  if (fields.Estudiante_Responsable !== undefined)
-    updates.student_name =
-      typeof fields.Estudiante_Responsable === 'object'
-        ? fields.Estudiante_Responsable.name || null
-        : fields.Estudiante_Responsable || null;
   if (fields.Fecha_Incidente !== undefined)
     updates.incident_date = fields.Fecha_Incidente || EMPTY;
   if (fields.Hora_Incidente !== undefined)
@@ -116,10 +164,6 @@ export function buildCaseUpdate(fields = {}) {
     updates.conduct_category = fields.Categoria || EMPTY;
   if (fields.Descripcion !== undefined)
     updates.short_description = fields.Descripcion || EMPTY;
-  if (fields.Acciones_Tomadas !== undefined)
-    updates.actions_taken = fields.Acciones_Tomadas || EMPTY;
-  if (fields.Apoderado_Notificado !== undefined)
-    updates.guardian_notified = Boolean(fields.Apoderado_Notificado);
   if (fields.Curso_Incidente !== undefined)
     updates.course_incident = fields.Curso_Incidente || EMPTY;
   if (fields.Responsable_Registro !== undefined)
@@ -207,7 +251,7 @@ function mapControlPlazoRow(row) {
         row.alerta_urgencia || calcularAlerta(row.dias_restantes),
       Fecha_Plazo: row.fecha_plazo || EMPTY,
       CASOS_ACTIVOS: [row.case_id],
-      // Backend-driven fields from v_control_plazos_plus
+      // Backend-driven fields from v_control_unificado (seguimiento)
       days_to_due: row.days_to_due ?? null,
       stage_num_from: row.stage_num_from ?? null,
     },
@@ -225,12 +269,7 @@ export async function getCases(status = null) {
     const { data, error } = await withRetry(() => {
       let query = supabase
         .from('cases')
-        .select(
-          `
-          *,
-          students(first_name, last_name, rut)
-        `,
-        )
+        .select(CASE_SELECT_FULL)
         .order('incident_date', { ascending: false });
 
       if (status) {
@@ -372,12 +411,7 @@ export async function getCase(id) {
     const { data, error } = await withRetry(() =>
       supabase
         .from('cases')
-        .select(
-          `
-          *,
-          students(first_name, last_name, rut)
-        `,
-        )
+        .select(CASE_SELECT_FULL)
         .eq('id', id)
         .single(),
     );
@@ -412,12 +446,7 @@ export async function createCase(fields) {
       supabase
         .from('cases')
         .insert([insertData])
-        .select(
-          `
-          *,
-          students(first_name, last_name, rut)
-        `,
-        )
+        .select(CASE_SELECT_FULL)
         .single(),
     );
 
@@ -449,12 +478,7 @@ export async function updateCase(id, fields) {
         .from('cases')
         .update(updates)
         .eq('id', id)
-        .select(
-          `
-          *,
-          students(first_name, last_name, rut)
-        `,
-        )
+        .select(CASE_SELECT_FULL)
         .single(),
     );
 
@@ -621,7 +645,13 @@ export async function createFollowup(input) {
     if (!row.stage_status) throw new Error('Se requiere stage_status');
 
     const { data, error } = await withRetry(() =>
-      supabase.from('case_followups').insert([row]).select('*').single(),
+      supabase
+        .from('case_followups')
+        .insert([row])
+        .select(
+          `id, case_id, action_date, action_type, process_stage, stage_status, detail, responsible, observations, due_date, due_at, created_at, description, action_at`,
+        )
+        .single(),
     );
     if (error) throw error;
 
@@ -696,8 +726,9 @@ export async function updateFollowup(idOrObj, fieldsMaybe = {}) {
 export async function getAllControlPlazos() {
   const { data, error } = await withRetry(() =>
     supabase
-      .from('v_control_plazos_plus')
-      .select('*')
+      .from('v_control_unificado')
+      .select(CONTROL_UNIFICADO_SELECT)
+      .eq('tipo', 'seguimiento')
       .order('dias_restantes', { ascending: true }),
   );
   if (error) throw error;
@@ -738,8 +769,9 @@ function mapControlAlertaRow(row) {
 export async function getAllControlAlertas() {
   const { data, error } = await withRetry(() =>
     supabase
-      .from('v_control_alertas')
-      .select('*')
+      .from('v_control_unificado')
+      .select(CONTROL_UNIFICADO_SELECT)
+      .eq('tipo', 'indagacion')
       .order('dias_restantes', { ascending: true }),
   );
   if (error) throw error;
@@ -757,15 +789,16 @@ export async function getControlPlazos(caseId) {
 
     const { data, error } = await withRetry(() =>
       supabase
-        .from('v_control_plazos_plus')
-        .select('*')
+        .from('v_control_unificado')
+        .select(CONTROL_UNIFICADO_SELECT)
+        .eq('tipo', 'seguimiento')
         .eq('case_id', caseId)
         .order('dias_restantes', { ascending: true }),
     );
 
     if (error) throw error;
 
-    logger.debug('📊 Datos de v_control_plazos_plus:', data);
+    logger.debug('📊 Datos de v_control_unificado (seguimiento):', data);
 
     return (data || []).map(mapControlPlazoRow);
   } catch (error) {
@@ -1017,8 +1050,9 @@ export async function getStageSlaRows() {
 export async function getPlazosResumen(casoId) {
   const { data, error } = await withRetry(() =>
     supabase
-      .from('v_control_plazos_case_resumen')
+      .from('v_control_unificado')
       .select('fecha_plazo, dias_restantes, alerta_urgencia')
+      .eq('tipo', 'resumen')
       .eq('case_id', casoId)
       .maybeSingle(),
   );
@@ -1033,8 +1067,9 @@ export async function getPlazosResumenMany(caseIds = []) {
 
   const { data, error } = await withRetry(() =>
     supabase
-      .from('v_control_plazos_case_resumen')
+      .from('v_control_unificado')
       .select('case_id, fecha_plazo, dias_restantes, alerta_urgencia')
+      .eq('tipo', 'resumen')
       .in('case_id', ids),
   );
   if (error) throw error;

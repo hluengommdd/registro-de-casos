@@ -29,14 +29,17 @@ import { formatDate } from '../utils/formatDate';
 import { onDataUpdated } from '../utils/refreshBus';
 import { useToast } from '../hooks/useToast';
 import { logger } from '../utils/logger';
+import useCachedAsync from '../hooks/useCachedAsync';
+import { clearCache } from '../utils/queryCache';
+import InlineError from '../components/InlineError';
 
 const COLORS = [
-  '#ef4444',
-  '#f97316',
-  '#eab308',
-  '#22c55e',
-  '#3b82f6',
-  '#a855f7',
+  '#dc2626',
+  '#ea580c',
+  '#ca8a04',
+  '#16a34a',
+  '#2563eb',
+  '#7c3aed',
 ];
 
 import useConductCatalog from '../hooks/useConductCatalog';
@@ -74,8 +77,7 @@ export default function Dashboard() {
   const [casosActivos, setCasosActivos] = useState([]);
   const [casosCerrados, setCasosCerrados] = useState([]);
   const [alertasPlazo, setAlertasPlazo] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [refreshKey, setRefreshKey] = useState(0);
   const { push } = useToast();
 
   // Hooks for conduct catalog/colors must run unconditionally
@@ -94,59 +96,76 @@ export default function Dashboard() {
     [conductTypes],
   );
 
+  const {
+    data: allCases,
+    loading: loadingCases,
+    error: errorCases,
+  } = useCachedAsync('cases:all', () => getCases(), [refreshKey], {
+    ttlMs: 30000,
+  });
+
+  const {
+    data: plazos,
+    loading: loadingPlazos,
+    error: errorPlazos,
+  } = useCachedAsync('control_alertas', () => getAllControlAlertas(), [refreshKey], {
+    ttlMs: 30000,
+  });
+
+  const loading = loadingCases || loadingPlazos;
+  const error = errorCases || errorPlazos;
+
   useEffect(() => {
-    let mounted = true;
+    if (!allCases) return;
+    const activos = allCases.filter((c) => c.fields?.Estado !== 'Cerrado');
+    const cerrados = allCases.filter((c) => c.fields?.Estado === 'Cerrado');
 
-    async function cargar() {
-      try {
-        setLoading(true);
-        const [allCases, plazos] = await Promise.all([
-          getCases(),
-          getAllControlAlertas(),
-        ]);
+    setCasosActivos(activos);
+    setCasosCerrados(cerrados);
 
-        if (!mounted) return;
-
-        const activos = allCases.filter((c) => c.fields?.Estado !== 'Cerrado');
-        const cerrados = allCases.filter((c) => c.fields?.Estado === 'Cerrado');
-
-        setCasosActivos(activos);
-        setCasosCerrados(cerrados);
-        // Filtrar alertas: no mostrar alertas vinculadas a casos cerrados
-        const plazosFiltrados = (plazos || []).filter((a) => {
-          const casoId = a.fields?.CASOS_ACTIVOS?.[0];
-          if (!casoId) return true;
-          const caso = allCases.find((c) => c.id === casoId);
-          return caso?.fields?.Estado !== 'Cerrado';
-        });
-        setAlertasPlazo(plazosFiltrados);
-      } catch (e) {
-        logger.error(e);
-        push({
-          type: 'error',
-          title: 'Error al cargar dashboard',
-          message: e?.message || 'Fallo de red',
-        });
-        if (mounted) setError(e?.message || 'Error al cargar datos');
-      } finally {
-        if (mounted) setLoading(false);
-      }
-    }
-
-    cargar();
-
-    const off = onDataUpdated(() => {
-      cargar();
+    if (!plazos) return;
+    // Filtrar alertas: no mostrar alertas vinculadas a casos cerrados
+    const plazosFiltrados = (plazos || []).filter((a) => {
+      const casoId = a.fields?.CASOS_ACTIVOS?.[0];
+      if (!casoId) return true;
+      const caso = allCases.find((c) => c.id === casoId);
+      return caso?.fields?.Estado !== 'Cerrado';
     });
+    setAlertasPlazo(plazosFiltrados);
+  }, [allCases, plazos]);
 
-    return () => {
-      mounted = false;
-      off();
-    };
-  }, [push]);
+  useEffect(() => {
+    if (!error) return;
+    logger.error(error);
+    push({
+      type: 'error',
+      title: 'Error al cargar dashboard',
+      message: error?.message || 'Fallo de red',
+    });
+  }, [error, push]);
+
+  useEffect(() => {
+    const off = onDataUpdated(() => {
+      clearCache('cases:all');
+      clearCache('control_alertas');
+      setRefreshKey((k) => k + 1);
+    });
+    return () => off();
+  }, []);
 
   if (loading) return <DashboardSkeleton />;
-  if (error) return <p className="text-red-500">Error al cargar datos.</p>;
+  if (error)
+    return (
+      <InlineError
+        title="Error al cargar dashboard"
+        message={error?.message || 'Fallo de red'}
+        onRetry={() => {
+          clearCache('cases:all');
+          clearCache('control_alertas');
+          setRefreshKey((k) => k + 1);
+        }}
+      />
+    );
 
   /* =========================
      MÉTRICAS CASOS
@@ -238,9 +257,9 @@ export default function Dashboard() {
   ];
 
   const PLAZOS_COLORS = {
-    Próximos: '#10b981', // green
-    Urgentes: '#8b5cf6', // purple
-    Vencidos: '#ef4444', // red
+    Próximos: '#16a34a',
+    Urgentes: '#7c3aed',
+    Vencidos: '#dc2626',
   };
 
   // 3) Casos por curso (bar) — solo activos
@@ -262,7 +281,7 @@ export default function Dashboard() {
 
   return (
     <div className="container space-y-8">
-      <p className="text-sm text-gray-600 font-medium">
+      <p className="text-sm text-slate-600 font-medium">
         Resumen Operativo de Convivencia Escolar · Año lectivo 2026
       </p>
 
@@ -328,16 +347,16 @@ export default function Dashboard() {
 
       {/* GRÁFICOS */}
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
-        <div className="bg-white rounded-xl shadow-sm p-4 sm:p-6">
+        <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-4 sm:p-6">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="font-semibold text-gray-900">
+            <h3 className="font-bold text-slate-800">
               Casos activos por tipificación
             </h3>
             <div className="flex items-center gap-2"></div>
           </div>
 
           {dataTipo.length === 0 ? (
-            <p className="text-sm text-gray-500">Sin datos para graficar.</p>
+            <p className="text-sm text-slate-500">Sin datos para graficar.</p>
           ) : (
             <ResponsiveContainer width="100%" height={280}>
               <PieChart>
@@ -361,6 +380,15 @@ export default function Dashboard() {
                   ))}
                 </Pie>
                 <Tooltip
+                  contentStyle={{
+                    borderRadius: '8px',
+                    border: '1px solid #e2e8f0',
+                    backgroundColor: '#ffffff',
+                    color: '#0f172a',
+                    boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)',
+                  }}
+                  labelStyle={{ color: '#334155', fontWeight: 600 }}
+                  itemStyle={{ color: '#0f172a' }}
                   formatter={(value, name) => [`${value} casos`, name]}
                 />
               </PieChart>
@@ -368,16 +396,16 @@ export default function Dashboard() {
           )}
         </div>
 
-        <div className="bg-white rounded-xl shadow-sm p-4 sm:p-6">
+        <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-4 sm:p-6">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="font-semibold text-gray-900">
+            <h3 className="font-bold text-slate-800">
               Estado de plazos (Control de Plazos)
             </h3>
             <div className="flex items-center gap-2"></div>
           </div>
 
           {dataPlazos.every((x) => x.value === 0) ? (
-            <p className="text-sm text-gray-500">
+            <p className="text-sm text-slate-500">
               No hay alertas para graficar.
             </p>
           ) : (
@@ -399,38 +427,58 @@ export default function Dashboard() {
                     />
                   ))}
                 </Pie>
-                <Tooltip />
+                <Tooltip
+                  contentStyle={{
+                    borderRadius: '8px',
+                    border: '1px solid #e2e8f0',
+                    backgroundColor: '#ffffff',
+                    color: '#0f172a',
+                    boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)',
+                  }}
+                  labelStyle={{ color: '#334155', fontWeight: 600 }}
+                  itemStyle={{ color: '#0f172a' }}
+                />
                 <Legend
                   verticalAlign="bottom"
                   height={36}
-                  wrapperStyle={{ fontSize: '12px' }}
+                  wrapperStyle={{ fontSize: '12px', color: '#475569' }}
                 />
               </PieChart>
             </ResponsiveContainer>
           )}
         </div>
 
-        <div className="bg-white rounded-xl shadow-sm p-4 sm:p-6">
+        <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-4 sm:p-6">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="font-semibold text-gray-900">
+            <h3 className="font-bold text-slate-800">
               Casos activos por curso (Top 10)
             </h3>
             <div className="flex items-center gap-2"></div>
           </div>
 
           {dataCurso.length === 0 ? (
-            <p className="text-sm text-gray-500">Sin datos para graficar.</p>
+            <p className="text-sm text-slate-500">Sin datos para graficar.</p>
           ) : (
             <ResponsiveContainer width="100%" height={280}>
               <BarChart
                 data={dataCurso}
                 margin={{ top: 10, right: 10, left: 0, bottom: 10 }}
               >
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="curso" tick={{ fontSize: 11 }} />
-                <YAxis allowDecimals={false} />
-                <Tooltip />
-                <Bar dataKey="total" fill="#3b82f6" />
+                <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+                <XAxis dataKey="curso" tick={{ fontSize: 11, fill: '#64748b' }} />
+                <YAxis allowDecimals={false} tick={{ fontSize: 11, fill: '#64748b' }} />
+                <Tooltip
+                  contentStyle={{
+                    borderRadius: '8px',
+                    border: '1px solid #e2e8f0',
+                    backgroundColor: '#ffffff',
+                    color: '#0f172a',
+                    boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)',
+                  }}
+                  labelStyle={{ color: '#334155', fontWeight: 600 }}
+                  itemStyle={{ color: '#0f172a' }}
+                />
+                <Bar dataKey="total" fill="#2563eb" />
               </BarChart>
             </ResponsiveContainer>
           )}
@@ -440,16 +488,16 @@ export default function Dashboard() {
       {/* BLOQUES OPERATIVOS */}
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
         {/* CASOS URGENTES */}
-        <div className="xl:col-span-2 bg-white rounded-xl shadow-sm p-4 sm:p-6">
+        <div className="xl:col-span-2 bg-white rounded-xl border border-slate-200 shadow-sm p-4 sm:p-6">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="font-semibold text-gray-900 flex items-center gap-2">
+            <h2 className="font-bold text-slate-800 flex items-center gap-2">
               <AlertTriangle size={18} className="text-red-600" />
               Casos que requieren atención inmediata
             </h2>
             <div className="flex items-center gap-2">
               <button
                 onClick={() => {}}
-                className="px-3 py-1 text-sm border rounded hover:bg-gray-50"
+                className="px-3 py-1 text-sm border border-slate-200 rounded hover:bg-slate-50 text-slate-700"
               >
                 Ver todos
               </button>
@@ -457,7 +505,7 @@ export default function Dashboard() {
           </div>
 
           {casosUrgentes.length === 0 ? (
-            <div className="flex items-start gap-3 p-4 rounded-lg bg-green-50 border border-green-200">
+            <div className="flex items-start gap-3 p-4 rounded-lg bg-green-100 border border-green-200">
               <ShieldCheck size={18} className="text-green-600 mt-0.5" />
               <div>
                 <p className="font-semibold text-green-800">
@@ -541,7 +589,9 @@ export default function Dashboard() {
                             {a.fields?.Etapa_Debido_Proceso || 'Etapa sin dato'}
                           </p>
                           <p className="text-xs text-gray-600 truncate">
-                            Responsable: {a.fields?.Responsable || '—'}
+                            {a._supabaseData?.estudiante
+                              ? `Estudiante: ${a._supabaseData.estudiante}`
+                              : `Responsable: ${a.fields?.Responsable || '—'}`}
                           </p>
                         </div>
                       </div>

@@ -144,7 +144,7 @@ export default function SeguimientoItem({ seg, readOnly = false }) {
           const fechaPlazo = seg.fields?.Fecha_Plazo || null;
           if (!fechaPlazo)
             return (
-              <p className="text-xs text-slate-400 mt-2">Sin plazo definido</p>
+              <p className="text-xs text-slate-500 mt-2">Sin plazo definido</p>
             );
 
           const due = new Date(fechaPlazo + 'T00:00:00');
@@ -158,14 +158,14 @@ export default function SeguimientoItem({ seg, readOnly = false }) {
             'bg-slate-100 text-slate-600 border border-slate-200';
           if (diff < 0) {
             badgeText = `Vencido ${Math.abs(diff)} día${Math.abs(diff) === 1 ? '' : 's'}`;
-            badgeClass = 'bg-red-50 text-red-700 border border-red-200';
+            badgeClass = 'bg-red-100 text-red-800 border border-red-200';
           } else if (diff === 0) {
             badgeText = 'Vence hoy';
-            badgeClass = 'bg-amber-50 text-amber-700 border border-amber-200';
+            badgeClass = 'bg-amber-100 text-amber-800 border border-amber-200';
           } else {
             badgeText = `En ${diff} día${diff === 1 ? '' : 's'}`;
             badgeClass =
-              'bg-emerald-50 text-emerald-700 border border-emerald-200';
+              'bg-emerald-100 text-emerald-800 border border-emerald-200';
           }
 
           return (

@@ -36,13 +36,13 @@ function Stepper({ activeKey }) {
             <div
               className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold border ${
                 active
-                  ? 'bg-brand-600 text-white border-brand-600'
-                  : 'bg-white text-slate-400 border-slate-200'
+                  ? 'bg-brand-700 text-white border-brand-700'
+                  : 'bg-white text-slate-600 border-slate-200'
               }`}
             >
               {idx + 1}
             </div>
-            <div className={`text-sm font-semibold ${active ? 'text-brand-700' : 'text-slate-400'}`}>
+            <div className={`text-sm font-semibold ${active ? 'text-brand-700' : 'text-slate-600'}`}>
               {s.label}
             </div>
           </div>
@@ -54,16 +54,16 @@ function Stepper({ activeKey }) {
 
 function ValidItem({ label, ok }) {
   return (
-    <div className="flex items-center justify-between bg-slate-50 border border-slate-100 rounded-xl px-4 py-3">
+    <div className="flex items-center justify-between bg-slate-50 border border-slate-200 rounded-xl px-4 py-3">
       <div className="flex items-center gap-3">
-        <CheckCircle2 className={`w-5 h-5 ${ok ? 'text-emerald-600' : 'text-slate-300'}`} />
-        <div className="text-sm font-medium text-slate-700">{label}</div>
+        <CheckCircle2 className={`w-5 h-5 ${ok ? 'text-emerald-600' : 'text-slate-400'}`} />
+        <div className="text-sm font-medium text-slate-800">{label}</div>
       </div>
       <span
         className={`text-[10px] font-bold px-2 py-1 rounded-full border ${
           ok
-            ? 'bg-emerald-50 text-emerald-700 border-emerald-100'
-            : 'bg-slate-100 text-slate-500 border-slate-200'
+            ? 'bg-emerald-100 text-emerald-800 border-emerald-200'
+            : 'bg-slate-100 text-slate-600 border-slate-200'
         }`}
       >
         {ok ? 'VALIDADO' : 'PENDIENTE'}
@@ -306,34 +306,34 @@ export default function CierreCasoPage() {
   }
 
   if (loading) {
-    return <div className="p-6 text-slate-500">Cargando cierre de caso…</div>;
+    return <div className="p-6 text-slate-600">Cargando cierre de caso…</div>;
   }
 
   return (
     <div className="h-full w-full">
       <div className="max-w-5xl mx-auto">
         <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-          <div className="px-6 py-5 border-b border-slate-100 bg-slate-50/40 flex items-start justify-between">
+          <div className="px-6 py-5 border-b border-slate-100 bg-slate-50/60 flex items-start justify-between">
             <div>
-              <div className="text-[11px] text-slate-400 font-semibold">
+              <div className="text-[11px] text-slate-600 font-semibold">
                 <span className="hover:underline cursor-pointer" onClick={() => navigate('/')}>Inicio</span>
                 <span className="mx-1">›</span>
                 <span className="hover:underline cursor-pointer" onClick={() => navigate(-1)}>Seguimiento</span>
                 <span className="mx-1">›</span>
-                <span className="text-slate-500">Cierre de Caso</span>
+                <span className="text-slate-600">Cierre de Caso</span>
               </div>
               <h1 className="text-xl font-black text-slate-900">{expedienteTitle}</h1>
-              <p className="text-sm text-slate-500 mt-1">
+              <p className="text-sm text-slate-600 mt-1">
                 Siga los pasos para formalizar la conclusión del proceso disciplinario.
               </p>
               {alumnoNombre && (
-                <p className="text-xs text-slate-400 mt-1">{alumnoNombre}</p>
+                <p className="text-xs text-slate-600 mt-1">{alumnoNombre}</p>
               )}
             </div>
 
             <button
               onClick={() => navigate(-1)}
-              className="p-2 rounded-lg hover:bg-slate-100 text-slate-500"
+              className="p-2 rounded-lg hover:bg-slate-100 text-slate-500 tap-target"
               aria-label="Cerrar"
               title="Volver"
             >
@@ -344,24 +344,24 @@ export default function CierreCasoPage() {
           <div className="px-6 py-5">
             <Stepper activeKey={activeStep} />
 
-            <div className="mt-4 flex items-center justify-end gap-3">
-              {prevStep && (
-                <button
-                  onClick={() => goToStep(prevStep, true)}
-                  className="text-xs font-semibold text-slate-500 hover:underline"
-                >
-                  Volver
-                </button>
-              )}
-              {nextStep && (
-                <button
-                  onClick={() => goToStep(nextStep)}
-                  className="text-xs font-semibold text-brand-700 hover:underline"
-                >
-                  Siguiente
-                </button>
-              )}
-            </div>
+              <div className="mt-4 flex items-center justify-end gap-3">
+                {prevStep && (
+                  <button
+                    onClick={() => goToStep(prevStep, true)}
+                    className="text-xs font-semibold text-slate-600 hover:underline"
+                  >
+                    Volver
+                  </button>
+                )}
+                {nextStep && (
+                  <button
+                    onClick={() => goToStep(nextStep)}
+                    className="text-xs font-semibold text-brand-700 hover:underline"
+                  >
+                    Siguiente
+                  </button>
+                )}
+              </div>
 
             {/* Paso 1 */}
             <div ref={validacionRef} className="mt-6">
@@ -387,7 +387,7 @@ export default function CierreCasoPage() {
               </div>
 
               <div className="mt-3">
-                <label className="text-xs font-bold text-slate-600">Descripción de Cierre</label>
+                <label className="text-xs font-bold text-slate-700">Descripción de Cierre</label>
                 <textarea
                   value={descripcionCierre}
                   onChange={(e) => setDescripcionCierre(e.target.value)}
@@ -399,7 +399,7 @@ export default function CierreCasoPage() {
 
               <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="text-xs font-bold text-slate-600">Medida Disciplinaria Final</label>
+                  <label className="text-xs font-bold text-slate-700">Medida Disciplinaria Final</label>
                   <select
                     value={medida}
                     onChange={(e) => setMedida(e.target.value)}
@@ -414,7 +414,7 @@ export default function CierreCasoPage() {
                   </select>
                 </div>
                 <div>
-                  <label className="text-xs font-bold text-slate-600">Responsable del Cierre</label>
+                  <label className="text-xs font-bold text-slate-700">Responsable del Cierre</label>
                   <input
                     value={responsableNombre}
                     onChange={(e) => setResponsableNombre(e.target.value)}
@@ -424,7 +424,7 @@ export default function CierreCasoPage() {
                   />
                 </div>
                 <div>
-                  <label className="text-xs font-bold text-slate-600">Cargo del Responsable</label>
+                  <label className="text-xs font-bold text-slate-700">Cargo del Responsable</label>
                   <select
                     value={responsableRol}
                     onChange={(e) => setResponsableRol(e.target.value)}
@@ -450,15 +450,15 @@ export default function CierreCasoPage() {
                 </h2>
               </div>
 
-              <div className="mt-4 rounded-2xl border border-brand-100 bg-brand-50/30 p-5 flex items-center justify-between gap-4">
+              <div className="mt-4 rounded-2xl border border-slate-200 bg-slate-50/60 p-5 flex items-center justify-between gap-4">
                 <div className="min-w-0">
                   <div className="text-base font-black text-slate-900">
                     Generar Expediente Final (PDF)
                   </div>
-                  <p className="text-xs text-slate-500 mt-1">
+                  <p className="text-xs text-slate-600 mt-1">
                     El sistema consolidará el seguimiento y la resolución final en un documento descargable.
                   </p>
-                  <div className="mt-3 flex flex-wrap gap-3 text-[11px] text-slate-500">
+                  <div className="mt-3 flex flex-wrap gap-3 text-[11px] text-slate-600">
                     <span>• PDF/A compatible</span>
                     <span>• Incluye evidencias</span>
                     <span>• Historial completo</span>
@@ -467,7 +467,7 @@ export default function CierreCasoPage() {
 
                 <button
                   onClick={generarPDF}
-                  className="inline-flex items-center gap-2 px-4 py-2 rounded-xl border border-brand-200 bg-white text-brand-700 text-sm font-semibold hover:bg-brand-50"
+                  className="inline-flex items-center gap-2 px-4 py-2 rounded-xl border border-slate-200 bg-white text-slate-800 text-sm font-semibold hover:bg-slate-50"
                 >
                   <FileDown className="w-4 h-4" />
                   Generar y Descargar
@@ -479,7 +479,7 @@ export default function CierreCasoPage() {
             <div className="mt-8 flex items-center justify-end gap-3">
               <button
                 onClick={() => navigate(-1)}
-                className="px-4 py-2 rounded-xl text-sm font-semibold text-slate-600 hover:bg-slate-50"
+                className="px-4 py-2 rounded-xl text-sm font-semibold text-slate-700 hover:bg-slate-50"
               >
                 Cancelar
               </button>

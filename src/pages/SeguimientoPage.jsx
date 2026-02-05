@@ -109,21 +109,21 @@ export default function SeguimientoPage({
         <div className="flex items-center justify-end gap-3">
           <button
             onClick={() => setStageToAdd(currentStageKey || effectiveStages[0])}
-            className="px-4 py-2 rounded-xl bg-brand-600 text-white text-sm font-semibold shadow-sm hover:bg-brand-700"
+            className="px-4 py-2 rounded-xl bg-brand-700 text-white text-sm font-semibold shadow-sm hover:bg-brand-800"
           >
             Registrar Acción
           </button>
           {!readOnly && (
             <button
               onClick={irACierreCaso}
-              className="px-4 py-2 rounded-xl bg-emerald-600 text-white text-sm font-semibold shadow-sm hover:bg-emerald-700"
+              className="px-4 py-2 rounded-xl bg-emerald-700 text-white text-sm font-semibold shadow-sm hover:bg-emerald-800"
             >
               Finalizar y Cerrar Caso
             </button>
           )}
         </div>
 
-        <div className="bg-white rounded-xl shadow-sm border p-4">
+        <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-4">
           <ProcesoVisualizer
             stages={effectiveStages}
             currentStageKey={currentStageKey}
@@ -142,21 +142,21 @@ export default function SeguimientoPage({
               return (
                 <div
                   key={stage}
-                  className="bg-white rounded-xl shadow-sm border overflow-hidden"
+                  className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden"
                 >
                   <button
                     onClick={() => setOpenStage(isOpen ? null : stage)}
-                    className="w-full flex justify-between items-center px-4 py-3"
+                    className="w-full flex justify-between items-center px-4 py-3 bg-slate-50/60"
                   >
                     <div className="flex items-center gap-3">
                       <div className="font-semibold text-slate-900">
                         {stage}
                       </div>
-                      <div className="text-xs text-slate-500">
+                      <div className="text-xs text-slate-600">
                         {count} acción{count === 1 ? '' : 'es'}
                       </div>
                     </div>
-                    <div className="text-slate-500 text-lg">
+                    <div className="text-slate-600 text-lg">
                       {isOpen ? '−' : '+'}
                     </div>
                   </button>
@@ -164,13 +164,13 @@ export default function SeguimientoPage({
                   {isOpen && (
                     <div className="px-4 pb-4 space-y-3">
                       {loading && (
-                        <div className="text-sm text-slate-500 py-2">
+                        <div className="text-sm text-slate-600 py-2">
                           Cargando…
                         </div>
                       )}
 
                       {!loading && count === 0 && (
-                        <div className="text-sm text-slate-500 py-2">
+                        <div className="text-sm text-slate-600 py-2">
                           No hay acciones registradas en esta etapa.
                         </div>
                       )}
@@ -184,14 +184,14 @@ export default function SeguimientoPage({
                           />
                         ))}
 
-                  {!readOnly && (
-                    <button
-                      className="text-sm text-blue-600 hover:underline"
-                      onClick={() => setStageToAdd(stage)}
-                    >
-                      + Registrar Acción en esta etapa
-                    </button>
-                  )}
+                      {!readOnly && (
+                        <button
+                          className="text-sm text-slate-700 hover:underline"
+                          onClick={() => setStageToAdd(stage)}
+                        >
+                          + Registrar Acción en esta etapa
+                        </button>
+                      )}
 
                       <StageMessages
                         caseId={caseId}
@@ -216,18 +216,18 @@ export default function SeguimientoPage({
                   {(involucrados || []).map((p) => (
                     <div
                       key={p.id}
-                      className="flex items-center justify-between text-sm border rounded-lg px-3 py-2 bg-white"
+                      className="flex items-center justify-between text-sm border border-slate-200 rounded-lg px-3 py-2 bg-white"
                     >
                       <div className="min-w-0">
                         <div className="font-medium truncate">{p.nombre}</div>
-                        <div className="text-xs text-slate-500 truncate">
+                        <div className="text-xs text-slate-600 truncate">
                           {p.rol}
                         </div>
                       </div>
                     </div>
                   ))}
                   {(!involucrados || involucrados.length === 0) && (
-                    <div className="text-sm text-slate-500">
+                    <div className="text-sm text-slate-600">
                       Sin involucrados registrados.
                     </div>
                   )}
@@ -239,11 +239,11 @@ export default function SeguimientoPage({
       </div>
 
       {!readOnly && stageToAdd && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4" role="dialog" aria-modal="true" aria-label="Registrar acci�n">
           <div className="w-full max-w-2xl bg-white rounded-2xl shadow-xl border border-slate-200 relative">
             <button
               onClick={() => setStageToAdd(null)}
-              className="absolute top-4 right-4 h-9 w-9 rounded-full border border-slate-200 bg-white text-slate-500 hover:text-slate-700 hover:border-slate-300 hover:bg-slate-50 shadow-sm flex items-center justify-center"
+              className="absolute top-4 right-4 h-9 w-9 rounded-full border border-slate-200 bg-white text-slate-600 hover:text-slate-800 hover:border-slate-300 hover:bg-slate-50 shadow-sm flex items-center justify-center tap-target"
               aria-label="Cerrar"
             >
               ✕
@@ -253,7 +253,7 @@ export default function SeguimientoPage({
               <h3 className="text-lg font-semibold text-slate-900">
                 Registrar acción
               </h3>
-              <p className="text-sm text-slate-500 mt-1">
+              <p className="text-sm text-slate-600 mt-1">
                 Etapa: {stageToAdd}
               </p>
             </div>

@@ -45,10 +45,13 @@ export default function ToastProvider({ children }) {
   return (
     <ToastContext.Provider value={{ push }}>
       {children}
-      <div className="fixed top-4 right-4 z-50 space-y-3">
+      <div className="fixed top-4 right-4 z-50 space-y-3" aria-live="off">
         {toasts.map((toast) => (
           <div
             key={toast.id}
+            role={toast.type === 'error' ? 'alert' : 'status'}
+            aria-live={toast.type === 'error' ? 'assertive' : 'polite'}
+            aria-atomic="true"
             className={`min-w-[240px] max-w-sm rounded-2xl shadow-xl px-4 py-3 text-sm text-white transition transform ${
               toast.type === 'error'
                 ? 'bg-red-600'

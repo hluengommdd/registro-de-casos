@@ -22,7 +22,7 @@ import { onDataUpdated } from '../utils/refreshBus';
 import { useToast } from '../hooks/useToast';
 import { logger } from '../utils/logger';
 
-const COLORS = ['#10b981', '#eab308', '#8b5cf6', '#ef4444'];
+const COLORS = ['#16a34a', '#ca8a04', '#7c3aed', '#dc2626'];
 
 /* =========================
    COMPONENTE
@@ -317,7 +317,7 @@ export default function Estadisticas() {
             <select
               value={semestre}
               onChange={(e) => setSemestre(e.target.value)}
-              className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 outline-none transition-all disabled:bg-slate-50 disabled:text-slate-400"
+              className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 outline-none transition-all disabled:bg-slate-50 disabled:text-slate-500"
               disabled={!anio}
             >
               <option value="Todos">Año completo</option>
@@ -371,7 +371,7 @@ export default function Estadisticas() {
                 </p>
                 <p className="text-2xl font-extrabold text-slate-800 mt-1">
                   {item.value}{' '}
-                  <span className="text-sm font-medium text-slate-400">
+                  <span className="text-sm font-medium text-slate-500">
                     {item.suffix || ''}
                   </span>
                 </p>
@@ -397,7 +397,7 @@ export default function Estadisticas() {
               {cumplimientoPlazo}%
             </span>
           </div>
-          <p className="text-xs text-slate-400 font-medium mt-1">
+          <p className="text-xs text-slate-500 font-medium mt-1">
             {plazos.fuera_plazo} casos fuera de plazo / {plazos.total_plazos}{' '}
             total
           </p>
@@ -411,11 +411,11 @@ export default function Estadisticas() {
             <span className="text-3xl font-extrabold text-brand-600">
               {reincidencia}
             </span>
-            <span className="text-sm font-medium text-slate-400">
+            <span className="text-sm font-medium text-slate-500">
               estudiantes
             </span>
           </div>
-          <p className="text-xs text-slate-400 font-medium mt-1">
+          <p className="text-xs text-slate-500 font-medium mt-1">
             Con 2 o más casos registrados
           </p>
         </div>
@@ -452,7 +452,7 @@ export default function Estadisticas() {
             <span className="text-3xl font-extrabold text-slate-800">
               {Number(promedioSeguimientos.promedio ?? 0).toFixed(1)}
             </span>
-            <span className="text-sm font-medium text-slate-400">
+            <span className="text-sm font-medium text-slate-500">
               acciones/caso
             </span>
           </div>
@@ -468,9 +468,9 @@ export default function Estadisticas() {
                 1,
               )}
             </span>
-            <span className="text-sm font-medium text-slate-400">días</span>
+            <span className="text-sm font-medium text-slate-500">días</span>
           </div>
-          <p className="text-xs text-slate-400 font-medium mt-1">
+          <p className="text-xs text-slate-500 font-medium mt-1">
             Promedio desde incidente
           </p>
         </div>
@@ -513,7 +513,7 @@ export default function Estadisticas() {
                         </button>
                       </td>
                       <td className="px-4 py-2.5 text-right">
-                        <span className="inline-flex items-center justify-center min-w-[2rem] px-2 py-1 rounded-full bg-red-50 text-red-700 font-bold text-xs border border-red-100">
+                        <span className="inline-flex items-center justify-center min-w-[2rem] px-2 py-1 rounded-full bg-red-100 text-red-800 font-bold text-xs border border-red-200">
                           {r.total}
                         </span>
                       </td>
@@ -546,16 +546,20 @@ export default function Estadisticas() {
               <Tooltip
                 contentStyle={{
                   borderRadius: '8px',
-                  border: 'none',
+                  border: '1px solid #e2e8f0',
+                  backgroundColor: '#ffffff',
+                  color: '#0f172a',
                   boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)',
                 }}
+                labelStyle={{ color: '#334155', fontWeight: 600 }}
+                itemStyle={{ color: '#0f172a' }}
               />
               <Line
                 type="monotone"
                 dataKey="total"
-                stroke="#2563eb"
+                stroke="#1d4ed8"
                 strokeWidth={3}
-                dot={{ r: 4, fill: '#2563eb', strokeWidth: 2, stroke: '#fff' }}
+                dot={{ r: 4, fill: '#1d4ed8', strokeWidth: 2, stroke: '#fff' }}
                 activeDot={{ r: 6 }}
               />
             </LineChart>
@@ -566,7 +570,7 @@ export default function Estadisticas() {
           <h3 className="font-bold text-slate-800 mb-4">
             Casos por Tipificación
           </h3>
-          <div className="flex flex-wrap items-center gap-3 text-xs font-medium text-slate-600 mb-4">
+          <div className="flex flex-wrap items-center gap-3 text-xs font-medium text-slate-700 mb-4">
             {/* Legend generated from conductTypes */}
             {(conductTypes || []).map((t) => (
               <div
@@ -608,9 +612,13 @@ export default function Estadisticas() {
               <Tooltip
                 contentStyle={{
                   borderRadius: '8px',
-                  border: 'none',
+                  border: '1px solid #e2e8f0',
+                  backgroundColor: '#ffffff',
+                  color: '#0f172a',
                   boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)',
                 }}
+                labelStyle={{ color: '#334155', fontWeight: 600 }}
+                itemStyle={{ color: '#0f172a' }}
                 formatter={(value, name) => [`${value} casos`, name]}
               />
             </PieChart>
@@ -643,9 +651,13 @@ export default function Estadisticas() {
                 cursor={{ fill: '#f1f5f9' }}
                 contentStyle={{
                   borderRadius: '8px',
-                  border: 'none',
+                  border: '1px solid #e2e8f0',
+                  backgroundColor: '#ffffff',
+                  color: '#0f172a',
                   boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)',
                 }}
+                labelStyle={{ color: '#334155', fontWeight: 600 }}
+                itemStyle={{ color: '#0f172a' }}
               />
               <Bar
                 dataKey="total"

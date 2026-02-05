@@ -94,7 +94,9 @@ export async function listEvidenceByFollowup(followupId) {
   const { data, error } = await withRetry(() =>
     supabase
       .from('followup_evidence')
-      .select('*')
+      .select(
+        `id, case_id, followup_id, storage_bucket, storage_path, file_name, content_type, file_size, created_at`,
+      )
       .eq('followup_id', followupId)
       .order('created_at', { ascending: false }),
   );

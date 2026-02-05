@@ -9,11 +9,11 @@ import { ArrowLeft, FileText, Calendar, Clock, Users, UserRound, GraduationCap }
 
 function Badge({ children, tone = 'slate' }) {
   const toneMap = {
-    slate: 'bg-slate-100 text-slate-700 border-slate-200',
-    green: 'bg-green-50 text-green-700 border-green-200',
-    amber: 'bg-amber-50 text-amber-700 border-amber-200',
-    red: 'bg-red-50 text-red-700 border-red-200',
-    purple: 'bg-purple-50 text-purple-700 border-purple-200',
+    slate: 'bg-slate-100 text-slate-800 border-slate-200',
+    green: 'bg-green-100 text-green-800 border-green-200',
+    amber: 'bg-amber-100 text-amber-800 border-amber-200',
+    red: 'bg-red-100 text-red-800 border-red-200',
+    purple: 'bg-purple-100 text-purple-800 border-purple-200',
   };
   return (
     <span
@@ -29,7 +29,7 @@ function Badge({ children, tone = 'slate' }) {
 function InfoCard({ icon: Icon, label, value }) {
   return (
     <div className="rounded-xl border border-slate-200 bg-white px-4 py-3">
-      <div className="flex items-center gap-2 text-xs font-bold text-slate-400 uppercase tracking-wider">
+      <div className="flex items-center gap-2 text-xs font-bold text-slate-500 uppercase tracking-wider">
         {Icon ? <Icon size={14} /> : null}
         {label}
       </div>
@@ -84,14 +84,15 @@ export default function CaseDetailModal({
 
   return (
     <ModalShell
-      title={null}
-      subtitle={null}
+      title={title}
+      subtitle={subtitle}
       onClose={onClose}
       footer={footer}
       size="xl"
       // Este modal dibuja su propio header (con botón Volver),
       // para evitar múltiples "X" de cierre.
       showHeader={false}
+      ariaLabel={title}
     >
       <div className="bg-slate-50">
         {/* Header estilo Stitch */}
@@ -101,7 +102,7 @@ export default function CaseDetailModal({
               <div className="flex items-center gap-3">
                 <button
                   onClick={onClose}
-                  className="inline-flex items-center justify-center w-9 h-9 rounded-xl border border-slate-200 hover:bg-slate-50"
+                  className="inline-flex items-center justify-center w-9 h-9 rounded-xl border border-slate-200 hover:bg-slate-50 tap-target"
                   aria-label="Volver"
                 >
                   <ArrowLeft size={18} />
@@ -171,7 +172,7 @@ export default function CaseDetailModal({
               <div className="px-5 py-5">
                 {/* Sujeto principal */}
                 <div className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3">
-                  <div className="text-xs font-bold text-slate-400 uppercase tracking-wider">
+                  <div className="text-xs font-bold text-slate-500 uppercase tracking-wider">
                     Sujeto principal
                   </div>
                   <div className="mt-1 font-semibold text-slate-900">
@@ -196,7 +197,7 @@ export default function CaseDetailModal({
                 </div>
 
                 <div className="mt-4">
-                  <div className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">
+                  <div className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">
                     Personas registradas
                   </div>
                   <InvolucradosListPlaceholder casoId={caso.id} />

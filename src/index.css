@@ -29,6 +29,17 @@
     font-size: 15px;
   }
 
+  button,
+  [type='button'],
+  [type='submit'],
+  [type='reset'],
+  a,
+  input,
+  select,
+  textarea {
+    @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-200 focus-visible:ring-offset-2 focus-visible:ring-offset-white;
+  }
+
   /* Custom Scrollbar (subtil) */
   ::-webkit-scrollbar {
     width: 8px;
@@ -82,7 +93,7 @@
 
   /* FORM ELEMENTS */
   .input-glass {
-    @apply bg-white border border-slate-200 rounded-md px-3 py-2 outline-none transition-shadow duration-150 placeholder:text-slate-400;
+    @apply bg-white border border-slate-200 rounded-md px-3 py-2 outline-none transition-shadow duration-150 placeholder:text-slate-500;
   }
 
   /* TYPOGRAPHY */
@@ -99,6 +110,15 @@
   .badge-glass {
     @apply px-2.5 py-0.5 rounded-full text-xs font-bold border shadow-sm;
     border: 1px solid rgba(15, 23, 42, 0.04);
+  }
+
+  /* Tap targets */
+  .tap-target {
+    min-width: 40px;
+    min-height: 40px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
   }
 }
 

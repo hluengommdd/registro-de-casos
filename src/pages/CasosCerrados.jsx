@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Eye, FileText } from 'lucide-react';
 import { getCaseFollowups, getCases } from '../api/db';
@@ -7,42 +7,91 @@ import { formatDate } from '../utils/formatDate';
 import { tipBadgeClasses } from '../utils/tipColors';
 import { useToast } from '../hooks/useToast';
 import { logger } from '../utils/logger';
+import useCachedAsync from '../hooks/useCachedAsync';
+import { clearCache } from '../utils/queryCache';
+import { onDataUpdated } from '../utils/refreshBus';
+import InlineError from '../components/InlineError';
+import usePersistedState from '../hooks/usePersistedState';
 
 export default function CasosCerrados() {
   const [casos, setCasos] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [refreshKey, setRefreshKey] = useState(0);
+  const [search, setSearch] = usePersistedState('casosCerrados.search', '');
+  const [pageSize, setPageSize] = usePersistedState(
+    'casosCerrados.pageSize',
+    10,
+  );
+  const [page, setPage] = usePersistedState('casosCerrados.page', 1);
   const navigate = useNavigate();
   const { push } = useToast();
 
+  const {
+    data: closedCases,
+    loading,
+    error,
+  } = useCachedAsync('cases:cerrado', () => getCases('Cerrado'), [refreshKey], {
+    ttlMs: 30000,
+  });
+
   useEffect(() => {
-    let mounted = true;
+    if (closedCases) setCasos(closedCases);
+  }, [closedCases]);
 
-    async function cargar() {
-      try {
-        setLoading(true);
-        const data = await getCases('Cerrado');
-        if (mounted) setCasos(data);
-      } catch (e) {
-        if (mounted) setError(e?.message || 'Error al cargar casos cerrados');
-      } finally {
-        if (mounted) setLoading(false);
-      }
-    }
+  useEffect(() => {
+    if (!error) return;
+    setCasos([]);
+  }, [error]);
 
-    cargar();
-
-    return () => {
-      mounted = false;
-    };
+  useEffect(() => {
+    const off = onDataUpdated(() => {
+      clearCache('cases:cerrado');
+      setRefreshKey((k) => k + 1);
+    });
+    return () => off();
   }, []);
+
+  const filteredCasos = useMemo(() => {
+    const q = String(search || '').trim().toLowerCase();
+    if (!q) return casos;
+    return (casos || []).filter((caso) => {
+      const estudiante = getStudentName(
+        caso.fields?.Estudiante_Responsable,
+        '',
+      ).toLowerCase();
+      const curso = (caso.fields?.Curso_Incidente || '').toLowerCase();
+      const conduct = (caso.fields?.Tipificacion_Conducta || '').toLowerCase();
+      const categoria = (caso.fields?.Categoria || '').toLowerCase();
+      return (
+        estudiante.includes(q) ||
+        curso.includes(q) ||
+        conduct.includes(q) ||
+        categoria.includes(q)
+      );
+    });
+  }, [casos, search]);
+
+  const totalPages = Math.max(1, Math.ceil(filteredCasos.length / pageSize));
+  const currentPage = Math.min(page, totalPages);
+  const pagedCasos = useMemo(() => {
+    const start = (currentPage - 1) * pageSize;
+    return filteredCasos.slice(start, start + pageSize);
+  }, [filteredCasos, currentPage, pageSize]);
 
   if (loading) {
     return <p className="text-gray-500">Cargando casos cerrados…</p>;
   }
 
   if (error) {
-    return <p className="text-red-500">Error: {error}</p>;
+    return (
+      <InlineError
+        title="Error al cargar casos cerrados"
+        message={error?.message || String(error)}
+        onRetry={() => {
+          clearCache('cases:cerrado');
+          setRefreshKey((k) => k + 1);
+        }}
+      />
+    );
   }
 
   async function handleExportPDF(caso) {
@@ -83,77 +132,149 @@ export default function CasosCerrados() {
             Archivo Histórico
           </h2>
           <span className="text-xs font-bold px-2 py-1 rounded-full bg-slate-100 text-slate-700 border border-slate-200">
-            {casos.length} casos
+            {filteredCasos.length} casos
           </span>
         </div>
       </div>
 
-      <div className="glass-panel overflow-hidden flex flex-col border border-white/60 shadow-xl">
-            {/* ENCABEZADO LISTA */}
-            <div className="px-5 py-3 border-b border-slate-100 bg-slate-50/50 backdrop-blur-sm flex justify-between items-center text-xs font-bold text-slate-400 uppercase tracking-wider">
-              <span>Listado Cerrados</span>
-              <span>Fecha Cierre</span>
-            </div>
+      <div className="flex flex-col sm:flex-row gap-3 px-2 mb-4">
+        <input
+          type="text"
+          value={search}
+          onChange={(e) => {
+            setSearch(e.target.value);
+            setPage(1);
+          }}
+          placeholder="Buscar por estudiante, curso o conducta"
+          className="flex-1 px-3 py-2 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-slate-200"
+        />
+        <select
+          value={pageSize}
+          onChange={(e) => {
+            setPageSize(Number(e.target.value));
+            setPage(1);
+          }}
+          className="px-3 py-2 rounded-lg border border-slate-200 bg-white"
+        >
+          <option value={10}>10 por página</option>
+          <option value={20}>20 por página</option>
+          <option value={50}>50 por página</option>
+        </select>
+        <button
+          onClick={() => {
+            setSearch('');
+            setPage(1);
+          }}
+          className="px-3 py-2 rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-50"
+        >
+          Limpiar
+        </button>
+      </div>
 
-            {/* LISTA SCROLLABLE */}
-            <div className="overflow-y-auto p-2 space-y-2 custom-scrollbar">
+      <div className="glass-panel overflow-hidden flex flex-col border border-slate-200 shadow-sm">
+        {/* ENCABEZADO LISTA */}
+        <div className="px-5 py-3 border-b border-slate-100 bg-slate-50/60 backdrop-blur-sm flex justify-between items-center text-xs font-bold text-slate-600 uppercase tracking-wider">
+          <span>Listado Cerrados</span>
+          <span>Fecha Cierre</span>
+        </div>
+
+        {/* LISTA SCROLLABLE */}
+        <div className="overflow-y-auto p-2 space-y-2 custom-scrollbar">
               {loading && (
-                <p className="p-8 text-center text-slate-400 text-sm animate-pulse">
-                  Cargando archivo...
-                </p>
+                <div className="space-y-2 p-2">
+                  {Array.from({ length: 6 }).map((_, i) => (
+                    <div
+                      key={i}
+                      className="bg-white rounded-xl border border-slate-100 p-4 animate-pulse"
+                    >
+                      <div className="flex items-center justify-between gap-4">
+                        <div className="space-y-2 flex-1">
+                          <div className="h-3 w-1/3 bg-slate-200 rounded" />
+                          <div className="h-3 w-1/2 bg-slate-200 rounded" />
+                        </div>
+                        <div className="h-6 w-20 bg-slate-200 rounded-full" />
+                      </div>
+                    </div>
+                  ))}
+                </div>
               )}
 
               {!loading && casos.length === 0 && (
-                <div className="p-10 text-center text-slate-400 text-sm">
+                <div className="p-10 text-center text-slate-500 text-sm">
                   No hay casos cerrados.
+                  <div className="mt-4">
+                    <button
+                      onClick={() => navigate('/casos-activos')}
+                      className="px-4 py-2 rounded-lg bg-slate-800 text-white hover:bg-slate-900"
+                    >
+                      Ir a casos activos
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {!loading && filteredCasos.length === 0 && casos.length > 0 && (
+                <div className="p-10 text-center text-slate-500 text-sm">
+                  No hay resultados con esos filtros.
+                  <div className="mt-3">
+                    <button
+                      onClick={() => {
+                        setSearch('');
+                        setPage(1);
+                      }}
+                      className="px-3 py-2 rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-50"
+                    >
+                      Limpiar filtros
+                    </button>
+                  </div>
                 </div>
               )}
 
               {!loading &&
-                casos.map((caso) => {
+                pagedCasos.map((caso) => {
                   return (
                     <div
                       key={caso.id}
-                      className="bg-white rounded-xl border border-slate-100 hover:border-slate-200 transition shadow-sm"
+                      className="bg-white rounded-xl border border-slate-200 hover:border-slate-300 transition shadow-sm hover:shadow-md"
                     >
                       <div className="p-4">
                         <div className="flex justify-between items-start mb-2">
-                        <span
-                          className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${tipBadgeClasses(caso.fields.Tipificacion_Conducta)}`}
-                        >
-                          {caso.fields.Tipificacion_Conducta}
-                        </span>
-                        <span className="text-[10px] font-medium text-slate-400">
-                          {formatDate(caso.fields.Fecha_Incidente)}
-                        </span>
+                          <span
+                            className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${tipBadgeClasses(caso.fields.Tipificacion_Conducta)}`}
+                          >
+                            {caso.fields.Tipificacion_Conducta}
+                          </span>
+                          <span className="text-[10px] font-medium text-slate-600">
+                            {formatDate(caso.fields.Fecha_Incidente)}
+                          </span>
                         </div>
 
                         <div>
-                        <h4 className="text-sm font-bold text-slate-700 mb-1 line-clamp-1 group-hover:text-slate-900 transition-colors">
-                          {getStudentName(
-                            caso.fields.Estudiante_Responsable,
-                            'Estudiante',
-                          )}
-                        </h4>
-                        <p className="text-xs text-slate-500 line-clamp-1">
-                          {caso.fields.Categoria}
-                        </p>
+                          <h4 className="text-sm font-bold text-slate-800 mb-1 line-clamp-1 group-hover:text-slate-900 transition-colors">
+                            {getStudentName(
+                              caso.fields.Estudiante_Responsable,
+                              'Estudiante',
+                            )}
+                          </h4>
+                          <p className="text-xs text-slate-600 line-clamp-1">
+                            {caso.fields.Categoria}
+                          </p>
                         </div>
 
                         <div className="mt-3 flex items-center justify-between">
                           <div className="flex items-center gap-2">
-                            <div className="w-5 h-5 rounded-full bg-slate-100 flex items-center justify-center text-[8px] font-bold text-slate-400">
+                            <div className="w-5 h-5 rounded-full bg-slate-100 flex items-center justify-center text-[8px] font-bold text-slate-600">
                               {caso.fields.Curso_Incidente?.substring(0, 2) ||
                                 'NA'}
                             </div>
-                            <span className="text-[10px] text-slate-400 font-medium">
+                            <span className="text-[10px] text-slate-600 font-medium">
                               Cerrado
                             </span>
                           </div>
 
                           <button
                             onClick={() => navigate(`/cierre-caso/${caso.id}`)}
-                            className="p-2 rounded-lg hover:bg-slate-100 text-slate-600"
+                            className="p-2 rounded-lg border border-slate-200 hover:bg-slate-50 text-slate-700 tap-target"
                             title="Ver detalle"
                             aria-label="Ver detalle"
                           >
@@ -161,7 +282,7 @@ export default function CasosCerrados() {
                           </button>
                           <button
                             onClick={() => handleExportPDF(caso)}
-                            className="p-2 rounded-lg hover:bg-slate-100 text-slate-600"
+                            className="p-2 rounded-lg border border-slate-200 hover:bg-slate-50 text-slate-700 tap-target"
                             title="Imprimir informe"
                             aria-label="Imprimir informe"
                           >
@@ -172,8 +293,32 @@ export default function CasosCerrados() {
                     </div>
                   );
                 })}
-            </div>
+        </div>
+      </div>
+
+      {!loading && filteredCasos.length > 0 && (
+        <div className="flex items-center justify-between px-2 mt-4 text-sm text-slate-600">
+          <span>
+            Página {currentPage} de {totalPages}
+          </span>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setPage((p) => Math.max(1, p - 1))}
+              disabled={currentPage === 1}
+              className="px-3 py-1 rounded border border-slate-200 disabled:opacity-50 hover:bg-slate-50"
+            >
+              Anterior
+            </button>
+            <button
+              onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+              disabled={currentPage === totalPages}
+              className="px-3 py-1 rounded border border-slate-200 disabled:opacity-50 hover:bg-slate-50"
+            >
+              Siguiente
+            </button>
           </div>
+        </div>
+      )}
 
     </div>
   );
