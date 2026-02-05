@@ -1,6 +1,7 @@
 ﻿import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Eye, FileText } from 'lucide-react';
+import { FixedSizeList as List } from 'react-window';
 import { getCaseFollowups, getCasesPage } from '../api/db';
 import { getStudentName } from '../utils/studentName';
 import { formatDate } from '../utils/formatDate';
@@ -12,6 +13,8 @@ import { clearCache } from '../utils/queryCache';
 import { onDataUpdated } from '../utils/refreshBus';
 import InlineError from '../components/InlineError';
 import usePersistedState from '../hooks/usePersistedState';
+
+const ROW_HEIGHT = 132;
 
 export default function CasosCerrados() {
   const [casos, setCasos] = useState([]);
@@ -118,6 +121,72 @@ export default function CasosCerrados() {
     }
   }
 
+  function Row({ index, style }) {
+    const caso = casos[index];
+    if (!caso) return null;
+
+    return (
+      <div style={style} className="px-2">
+        <div className="bg-white rounded-xl border border-slate-200 hover:border-slate-300 transition shadow-sm hover:shadow-md">
+          <div className="p-4">
+            <div className="flex justify-between items-start mb-2">
+              <span
+                className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${tipBadgeClasses(caso.fields.Tipificacion_Conducta)}`}
+              >
+                {caso.fields.Tipificacion_Conducta}
+              </span>
+              <span className="text-[10px] font-medium text-slate-600">
+                {formatDate(caso.fields.Fecha_Incidente)}
+              </span>
+            </div>
+
+            <div>
+              <h4 className="text-sm font-bold text-slate-800 mb-1 line-clamp-1 group-hover:text-slate-900 transition-colors">
+                {getStudentName(
+                  caso.fields.Estudiante_Responsable,
+                  'Estudiante',
+                )}
+              </h4>
+              <p className="text-xs text-slate-600 line-clamp-1">
+                {caso.fields.Categoria}
+              </p>
+            </div>
+
+            <div className="mt-3 flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <div className="w-5 h-5 rounded-full bg-slate-100 flex items-center justify-center text-[8px] font-bold text-slate-600">
+                  {caso.fields.Curso_Incidente?.substring(0, 2) || 'NA'}
+                </div>
+                <span className="text-[10px] text-slate-600 font-medium">
+                  Cerrado
+                </span>
+              </div>
+
+              <button
+                onClick={() => navigate(`/cierre-caso/${caso.id}`)}
+                className="p-2 rounded-lg border border-slate-200 hover:bg-slate-50 text-slate-700 tap-target"
+                title="Ver detalle"
+                aria-label="Ver detalle"
+              >
+                <Eye size={18} />
+              </button>
+              <button
+                onClick={() => handleExportPDF(caso)}
+                className="p-2 rounded-lg border border-slate-200 hover:bg-slate-50 text-slate-700 tap-target"
+                title="Imprimir informe"
+                aria-label="Imprimir informe"
+              >
+                <FileText size={18} />
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  const listHeight = Math.min(560, Math.max(280, casos.length * ROW_HEIGHT));
+
   return (
     <div className="h-full p-2">
       <div className="flex items-center justify-between px-2 mb-4">
@@ -173,26 +242,7 @@ export default function CasosCerrados() {
         </div>
 
         {/* LISTA SCROLLABLE */}
-        <div className="overflow-y-auto p-2 space-y-2 custom-scrollbar">
-          {loading && (
-            <div className="space-y-2 p-2">
-              {Array.from({ length: 6 }).map((_, i) => (
-                <div
-                  key={i}
-                  className="bg-white rounded-xl border border-slate-100 p-4 animate-pulse"
-                >
-                  <div className="flex items-center justify-between gap-4">
-                    <div className="space-y-2 flex-1">
-                      <div className="h-3 w-1/3 bg-slate-200 rounded" />
-                      <div className="h-3 w-1/2 bg-slate-200 rounded" />
-                    </div>
-                    <div className="h-6 w-20 bg-slate-200 rounded-full" />
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-
+        <div className="overflow-y-auto p-2 custom-scrollbar">
           {!loading && totalCasos === 0 && (
             <div className="p-10 text-center text-slate-500 text-sm">
               No hay casos cerrados.
@@ -224,69 +274,16 @@ export default function CasosCerrados() {
             </div>
           )}
 
-          {!loading &&
-            casos.map((caso) => {
-              return (
-                <div
-                  key={caso.id}
-                  className="bg-white rounded-xl border border-slate-200 hover:border-slate-300 transition shadow-sm hover:shadow-md"
-                >
-                  <div className="p-4">
-                    <div className="flex justify-between items-start mb-2">
-                      <span
-                        className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${tipBadgeClasses(caso.fields.Tipificacion_Conducta)}`}
-                      >
-                        {caso.fields.Tipificacion_Conducta}
-                      </span>
-                      <span className="text-[10px] font-medium text-slate-600">
-                        {formatDate(caso.fields.Fecha_Incidente)}
-                      </span>
-                    </div>
-
-                    <div>
-                      <h4 className="text-sm font-bold text-slate-800 mb-1 line-clamp-1 group-hover:text-slate-900 transition-colors">
-                        {getStudentName(
-                          caso.fields.Estudiante_Responsable,
-                          'Estudiante',
-                        )}
-                      </h4>
-                      <p className="text-xs text-slate-600 line-clamp-1">
-                        {caso.fields.Categoria}
-                      </p>
-                    </div>
-
-                    <div className="mt-3 flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <div className="w-5 h-5 rounded-full bg-slate-100 flex items-center justify-center text-[8px] font-bold text-slate-600">
-                          {caso.fields.Curso_Incidente?.substring(0, 2) ||
-                            'NA'}
-                        </div>
-                        <span className="text-[10px] text-slate-600 font-medium">
-                          Cerrado
-                        </span>
-                      </div>
-
-                      <button
-                        onClick={() => navigate(`/cierre-caso/${caso.id}`)}
-                        className="p-2 rounded-lg border border-slate-200 hover:bg-slate-50 text-slate-700 tap-target"
-                        title="Ver detalle"
-                        aria-label="Ver detalle"
-                      >
-                        <Eye size={18} />
-                      </button>
-                      <button
-                        onClick={() => handleExportPDF(caso)}
-                        className="p-2 rounded-lg border border-slate-200 hover:bg-slate-50 text-slate-700 tap-target"
-                        title="Imprimir informe"
-                        aria-label="Imprimir informe"
-                      >
-                        <FileText size={18} />
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              );
-            })}
+          {!loading && casos.length > 0 && (
+            <List
+              height={listHeight}
+              itemCount={casos.length}
+              itemSize={ROW_HEIGHT}
+              width="100%"
+            >
+              {Row}
+            </List>
+          )}
         </div>
       </div>
 
