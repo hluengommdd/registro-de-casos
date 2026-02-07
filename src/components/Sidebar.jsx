@@ -91,7 +91,7 @@ export default function Sidebar({ mobileOpen = false, onClose = () => {} }) {
         className={`hidden sm:flex flex-col m-2.5 mr-0 relative z-20
           glass-panel
           transition-all duration-500 ease-[cubic-bezier(0.25,0.8,0.25,1)]
-          ${collapsed ? 'sidebar-collapsed w-[88px]' : 'w-60'}
+          ${collapsed ? 'sidebar-collapsed w-[72px] md:w-[88px]' : 'w-52 md:w-60'}
         `}
       >
         {/* HEADER CON LOGO */}

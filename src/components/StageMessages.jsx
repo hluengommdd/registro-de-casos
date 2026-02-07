@@ -156,7 +156,7 @@ export default function StageMessages({
                   )}
 
                   <div
-                    className={`max-w-[85%] rounded-2xl px-3 py-2 shadow-sm border ${
+                    className={`max-w-[92%] sm:max-w-[85%] rounded-2xl px-3 py-2 shadow-sm border ${
                       isSelf
                         ? 'bg-sky-50 border-sky-200'
                         : 'bg-white border-slate-200'

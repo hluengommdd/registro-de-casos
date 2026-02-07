@@ -436,7 +436,7 @@ function Seccion({ titulo, descripcion, items, navigate, tone, compact = false }
 
                 {/* Última acción del debido proceso */}
                 <div className="flex flex-col items-end gap-0.5">
-                  <span className="text-[10px] font-bold text-slate-700 truncate max-w-[120px]">
+                  <span className="text-[10px] font-bold text-slate-700 truncate max-w-[160px] sm:max-w-[220px]">
                     {s.etapa_debido_proceso || 'Sin etapa'}
                   </span>
                   {(lastAction || refActividad) && (
