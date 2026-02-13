@@ -91,6 +91,21 @@
     outline-offset: 2px;
   }
 
+  /* Base visual estable para campos de formulario */
+  input,
+  select,
+  textarea {
+    background-color: #ffffff;
+    color: #0f172a;
+    border-color: #cbd5e1;
+  }
+
+  input::placeholder,
+  textarea::placeholder {
+    color: #94a3b8;
+    opacity: 1;
+  }
+
   /* Skip link para navegación por teclado */
   .skip-link {
     @apply absolute -top-10 left-4 z-[100] bg-emerald-700 text-white px-4 py-2 rounded-md;

@@ -10,16 +10,18 @@
     "moduleResolution": "bundler",
     "allowImportingTsExtensions": true,
     "resolveJsonModule": true,
-    "isolatedModules": true,
+    "isolatedModules": false,
+    "skipLibCheck": true,
     "noEmit": true,
     "jsx": "react-jsx",
+    "types": ["vite/client", "vitest/globals"],
     
-    /* TypeScript stricter options */
-    "strict": true,
+    /* TypeScript migration mode (gradual) */
+    "strict": false,
     "noUnusedLocals": false,
     "noUnusedParameters": false,
     "noFallthroughCasesInSwitch": true,
-    "noImplicitAny": false, //渐进式迁移
+    "noImplicitAny": false,
     
     /* Paths aliases */
     "baseUrl": ".",

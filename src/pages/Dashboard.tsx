@@ -1,0 +1,638 @@
+import {
+  AlertTriangle,
+  Clock,
+  Activity,
+  CheckCircle,
+  ShieldCheck,
+  Timer,
+} from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { useEffect, useState, useMemo } from 'react';
+import {
+  PieChart,
+  Pie,
+  Cell,
+  ResponsiveContainer,
+  Tooltip,
+  Legend,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+} from 'recharts';
+import { BarChart } from 'recharts/es6/chart/BarChart';
+import { Bar } from 'recharts/es6/cartesian/Bar';
+
+import StatCard from '../components/StatCard';
+import UrgentCaseCard from '../components/UrgentCaseCard';
+import { getCases, getAllControlAlertas } from '../api/db';
+import { formatDate } from '../utils/formatDate';
+import { getStudentName } from '../utils/studentName';
+import { onDataUpdated } from '../utils/refreshBus';
+import { useToast } from '../hooks/useToast';
+import { logger } from '../utils/logger';
+import useCachedAsync from '../hooks/useCachedAsync';
+import { clearCache } from '../utils/queryCache';
+import InlineError from '../components/InlineError';
+import { getCaseStatus } from '../utils/caseStatus';
+
+const COLORS = [
+  '#dc2626',
+  '#ea580c',
+  '#ca8a04',
+  '#16a34a',
+  '#2563eb',
+  '#7c3aed',
+];
+
+import useConductCatalog from '../hooks/useConductCatalog';
+
+function DashboardSkeleton() {
+  return (
+    <div className="space-y-6 animate-pulse">
+      <div className="h-6 w-64 bg-gray-200 rounded" />
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        {[1, 2, 3].map((i) => (
+          <div key={i} className="h-28 bg-gray-200 rounded-xl" />
+        ))}
+      </div>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        {[4, 5, 6].map((i) => (
+          <div key={i} className="h-28 bg-gray-200 rounded-xl" />
+        ))}
+      </div>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="h-64 bg-gray-200 rounded-xl" />
+        <div className="h-64 bg-gray-200 rounded-xl" />
+        <div className="h-64 bg-gray-200 rounded-xl" />
+      </div>
+    </div>
+  );
+}
+
+export default function Dashboard() {
+  const navigate = useNavigate();
+
+  /* =========================
+     DATA
+  ========================== */
+
+  const [casosActivos, setCasosActivos] = useState([]);
+  const [casosCerrados, setCasosCerrados] = useState([]);
+  const [alertasPlazo, setAlertasPlazo] = useState([]);
+  const [refreshKey, setRefreshKey] = useState(0);
+  const { push } = useToast();
+
+  // Hooks for conduct catalog/colors must run unconditionally
+  const { conductTypes = [] } = useConductCatalog();
+
+  const typeColorByKey = useMemo(() => {
+    const m = {};
+    for (const t of conductTypes || []) {
+      if (t?.key && t?.color) m[t.key] = t.color;
+    }
+    return m;
+  }, [conductTypes]);
+
+  const tipoPalette = useMemo(
+    () => (conductTypes || []).map((t) => t.color).filter(Boolean),
+    [conductTypes],
+  );
+
+  const {
+    data: allCases,
+    loading: loadingCases,
+    error: errorCases,
+  } = useCachedAsync('cases:all', () => getCases(), [refreshKey], {
+    ttlMs: 30000,
+  });
+
+  const {
+    data: plazos,
+    loading: loadingPlazos,
+    error: errorPlazos,
+  } = useCachedAsync(
+    'control_alertas',
+    () => getAllControlAlertas(),
+    [refreshKey],
+    {
+      ttlMs: 30000,
+    },
+  );
+
+  const loading = loadingCases || loadingPlazos;
+  const error = errorCases || errorPlazos;
+
+  useEffect(() => {
+    if (!allCases) return;
+    const activos = allCases.filter((c) => getCaseStatus(c, '') !== 'cerrado');
+    const cerrados = allCases.filter((c) => getCaseStatus(c, '') === 'cerrado');
+
+    setCasosActivos(activos);
+    setCasosCerrados(cerrados);
+
+    if (!plazos) return;
+    // Filtrar alertas: no mostrar alertas vinculadas a casos cerrados
+    const plazosFiltrados = (plazos || []).filter((a) => {
+      const casoId = a.case_id;
+      if (!casoId) return true;
+      const caso = allCases.find((c) => c.id === casoId);
+      return getCaseStatus(caso, '') !== 'cerrado';
+    });
+    setAlertasPlazo(plazosFiltrados);
+  }, [allCases, plazos]);
+
+  useEffect(() => {
+    if (!error) return;
+    logger.error(error);
+    push({
+      type: 'error',
+      title: 'Error al cargar dashboard',
+      message: error?.message || 'Fallo de red',
+    });
+  }, [error, push]);
+
+  useEffect(() => {
+    const off = onDataUpdated(() => {
+      clearCache('cases:all');
+      clearCache('control_alertas');
+      setRefreshKey((k) => k + 1);
+    });
+    return () => off();
+  }, []);
+
+  if (loading) return <DashboardSkeleton />;
+  if (error)
+    return (
+      <InlineError
+        title="Error al cargar dashboard"
+        message={error?.message || 'Fallo de red'}
+        onRetry={() => {
+          clearCache('cases:all');
+          clearCache('control_alertas');
+          setRefreshKey((k) => k + 1);
+        }}
+      />
+    );
+
+  /* =========================
+     MÉTRICAS CASOS
+  ========================== */
+
+  const totalActivos = casosActivos.length;
+  const totalCerrados = casosCerrados.length;
+  const totalCasos = totalActivos + totalCerrados;
+
+  const tasaCierre =
+    totalCasos > 0 ? Math.round((totalCerrados / totalCasos) * 100) : 0;
+
+  const casosUrgentes = casosActivos.filter((c) =>
+    ['Muy Grave', 'Gravísima'].includes(c.conduct_type),
+  );
+
+  const hoyISO = new Date().toISOString().slice(0, 10);
+  logger.debug('📅 Fecha de hoy:', hoyISO);
+
+  const casosHoy = casosActivos.filter((c) => {
+    const fechaCreacion = c.created_at;
+    if (!fechaCreacion) return false;
+
+    // Extraer solo la parte de la fecha (YYYY-MM-DD) del timestamp
+    const fechaSolo = fechaCreacion.split('T')[0];
+    const esHoy = fechaSolo === hoyISO;
+
+    if (esHoy) {
+      logger.debug('✅ Caso creado hoy:', c.students, fechaCreacion);
+    }
+    return esHoy;
+  });
+
+  logger.debug('📊 Total casos creados hoy:', casosHoy.length);
+
+  /* =========================
+     MÉTRICAS PLAZOS
+  ========================== */
+
+  const resumenPlazos = { rojos: 0, naranjos: 0, amarillos: 0 };
+
+  alertasPlazo.forEach((a) => {
+    const txt = a.alerta_urgencia || '';
+    if (txt.startsWith('🔴')) resumenPlazos.rojos++;
+    else if (txt.startsWith('🟠')) resumenPlazos.naranjos++;
+    else if (txt.startsWith('🟡')) resumenPlazos.amarillos++;
+  });
+
+  // ✅ “Próximos a vencer ≤ 3 días” = naranjos + amarillos (según lógica de alertas)
+  const proximosAVencer = resumenPlazos.naranjos + resumenPlazos.amarillos;
+
+  // Top alertas para listado (orden por días)
+  const topAlertas = [...alertasPlazo]
+    .sort((a, b) => {
+      const da = a.dias_restantes;
+      const db = b.dias_restantes;
+      return (
+        (typeof da === 'number' ? da : Infinity) -
+        (typeof db === 'number' ? db : Infinity)
+      );
+    })
+    .slice(0, 6);
+
+  /* =========================
+     GRÁFICOS (DATA)
+  ========================== */
+
+  // 1) Casos activos por tipificación (pie)
+  const porTipo = {};
+  casosActivos.forEach((c) => {
+    const t = c.conduct_type || 'Sin dato';
+    porTipo[t] = (porTipo[t] || 0) + 1;
+  });
+  const dataTipo = Object.entries(porTipo).map(([name, value]) => ({
+    name,
+    value,
+  }));
+
+  // 2) Plazos (pie)
+  // Reorder and recolor: Próximos (verde), Urgentes (morado), Vencidos (rojo)
+  const dataPlazos = [
+    { name: 'Próximos', value: resumenPlazos.amarillos },
+    { name: 'Urgentes', value: resumenPlazos.naranjos },
+    { name: 'Vencidos', value: resumenPlazos.rojos },
+  ];
+
+  const PLAZOS_COLORS = {
+    Próximos: '#16a34a',
+    Urgentes: '#7c3aed',
+    Vencidos: '#dc2626',
+  };
+
+  // 3) Casos por curso (bar) — solo activos
+  const porCurso: Record<string, number> = {};
+  casosActivos.forEach((c) => {
+    const curso = c.course_incident || 'Sin curso';
+    porCurso[curso] = (porCurso[curso] || 0) + 1;
+  });
+
+  // Ordenar cursos por cantidad desc y tomar top 10 para que no se haga eterno
+  const dataCurso = Object.entries(porCurso)
+    .map(([curso, total]) => ({ curso, total }))
+    .sort((a, b) => b.total - a.total)
+    .slice(0, 10);
+
+  /* =========================
+     UI
+  ========================== */
+
+  return (
+    <div className="container space-y-8">
+      <p className="text-sm text-slate-600 font-medium">
+        Resumen Operativo de Convivencia Escolar · Año lectivo 2026
+      </p>
+
+      {/* KPIs – FILA 1 */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <StatCard
+          title="Atención Prioritaria"
+          value={casosUrgentes.length}
+          subtitle="Muy graves y gravísimos activos"
+          icon={<AlertTriangle className="text-white" size={20} />}
+          color="bg-red-600"
+          onClick={() => navigate('/casos-activos?tip=Muy%20Grave')}
+        />
+
+        <StatCard
+          title="Plazos Críticos"
+          value={resumenPlazos.rojos}
+          subtitle="Investigaciones vencidas"
+          icon={<Timer className="text-white" size={20} />}
+          color="bg-rose-700"
+          onClick={() => navigate('/alertas?filter=vencidos')}
+        />
+
+        <StatCard
+          title="Próximos a vencer"
+          value={proximosAVencer}
+          subtitle="≤ 3 días"
+          icon={<Clock className="text-white" size={20} />}
+          color="bg-orange-500"
+          onClick={() => navigate('/alertas?filter=proximos')}
+        />
+      </div>
+
+      {/* KPIs – FILA 2 */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <StatCard
+          title="Casos en curso"
+          value={totalActivos}
+          subtitle="Investigación o seguimiento"
+          icon={<Activity className="text-white" size={20} />}
+          color="bg-amber-500"
+          onClick={() => navigate('/casos-activos')}
+        />
+
+        <StatCard
+          title="Tasa de cierre"
+          value={`${tasaCierre}%`}
+          subtitle={`${totalCerrados} de ${totalCasos} cerrados`}
+          icon={<CheckCircle className="text-white" size={20} />}
+          color="bg-green-600"
+          onClick={() => navigate('/casos-cerrados')}
+        />
+
+        <StatCard
+          title="Casos registrados hoy"
+          value={casosHoy.length}
+          subtitle="Incidentes del día"
+          icon={<Clock className="text-white" size={20} />}
+          color="bg-blue-600"
+          onClick={() => navigate('/casos-activos?created=today')}
+        />
+      </div>
+
+      {/* GRÁFICOS */}
+      <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
+        <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-4 sm:p-6">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="font-bold text-slate-800">
+              Casos activos por tipificación
+            </h3>
+            <div className="flex items-center gap-2"></div>
+          </div>
+
+          {dataTipo.length === 0 ? (
+            <p className="text-sm text-slate-500">Sin datos para graficar.</p>
+          ) : (
+            <ResponsiveContainer width="100%" height={280}>
+              <PieChart>
+                <Pie
+                  data={dataTipo}
+                  dataKey="value"
+                  nameKey="name"
+                  outerRadius={80}
+                  label={(entry) => entry.name}
+                  labelLine={false}
+                >
+                  {dataTipo.map((entry, i) => (
+                    <Cell
+                      key={i}
+                      fill={
+                        typeColorByKey[entry.name] ||
+                        tipoPalette[i % tipoPalette.length] ||
+                        COLORS[i % COLORS.length]
+                      }
+                    />
+                  ))}
+                </Pie>
+                <Tooltip
+                  contentStyle={{
+                    borderRadius: '8px',
+                    border: '1px solid #e2e8f0',
+                    backgroundColor: '#ffffff',
+                    color: '#0f172a',
+                    boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)',
+                  }}
+                  labelStyle={{ color: '#334155', fontWeight: 600 }}
+                  itemStyle={{ color: '#0f172a' }}
+                  formatter={(value, name) => [`${value} casos`, name]}
+                />
+              </PieChart>
+            </ResponsiveContainer>
+          )}
+        </div>
+
+        <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-4 sm:p-6">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="font-bold text-slate-800">
+              Estado de plazos (Control de Plazos)
+            </h3>
+            <div className="flex items-center gap-2"></div>
+          </div>
+
+          {dataPlazos.every((x) => x.value === 0) ? (
+            <p className="text-sm text-slate-500">
+              No hay alertas para graficar.
+            </p>
+          ) : (
+            <ResponsiveContainer width="100%" height={280}>
+              <PieChart>
+                <Pie
+                  data={dataPlazos}
+                  dataKey="value"
+                  nameKey="name"
+                  outerRadius={80}
+                  label={false}
+                >
+                  {dataPlazos.map((entry, i) => (
+                    <Cell
+                      key={i}
+                      fill={
+                        PLAZOS_COLORS[entry.name] || COLORS[i % COLORS.length]
+                      }
+                    />
+                  ))}
+                </Pie>
+                <Tooltip
+                  contentStyle={{
+                    borderRadius: '8px',
+                    border: '1px solid #e2e8f0',
+                    backgroundColor: '#ffffff',
+                    color: '#0f172a',
+                    boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)',
+                  }}
+                  labelStyle={{ color: '#334155', fontWeight: 600 }}
+                  itemStyle={{ color: '#0f172a' }}
+                />
+                <Legend
+                  verticalAlign="bottom"
+                  height={36}
+                  wrapperStyle={{ fontSize: '12px', color: '#475569' }}
+                />
+              </PieChart>
+            </ResponsiveContainer>
+          )}
+        </div>
+
+        <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-4 sm:p-6">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="font-bold text-slate-800">
+              Casos activos por curso (Top 10)
+            </h3>
+            <div className="flex items-center gap-2"></div>
+          </div>
+
+          {dataCurso.length === 0 ? (
+            <p className="text-sm text-slate-500">Sin datos para graficar.</p>
+          ) : (
+            <ResponsiveContainer width="100%" height={280}>
+              <BarChart
+                data={dataCurso}
+                margin={{ top: 10, right: 10, left: 0, bottom: 10 }}
+              >
+                <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+                <XAxis
+                  dataKey="curso"
+                  tick={{ fontSize: 11, fill: '#64748b' }}
+                />
+                <YAxis
+                  allowDecimals={false}
+                  tick={{ fontSize: 11, fill: '#64748b' }}
+                />
+                <Tooltip
+                  contentStyle={{
+                    borderRadius: '8px',
+                    border: '1px solid #e2e8f0',
+                    backgroundColor: '#ffffff',
+                    color: '#0f172a',
+                    boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)',
+                  }}
+                  labelStyle={{ color: '#334155', fontWeight: 600 }}
+                  itemStyle={{ color: '#0f172a' }}
+                />
+                <Bar dataKey="total" fill="#2563eb" />
+              </BarChart>
+            </ResponsiveContainer>
+          )}
+        </div>
+      </div>
+
+      {/* BLOQUES OPERATIVOS */}
+      <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
+        {/* CASOS URGENTES */}
+        <div className="xl:col-span-2 bg-white rounded-xl border border-slate-200 shadow-sm p-4 sm:p-6">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="font-bold text-slate-800 flex items-center gap-2">
+              <AlertTriangle size={18} className="text-red-600" />
+              Casos que requieren atención inmediata
+            </h2>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => {}}
+                className="px-3 py-1 text-sm border border-slate-200 rounded hover:bg-brand-50 text-slate-700"
+              >
+                Ver todos
+              </button>
+            </div>
+          </div>
+
+          {casosUrgentes.length === 0 ? (
+            <div className="flex items-start gap-3 p-4 rounded-lg bg-green-100 border border-green-200">
+              <ShieldCheck size={18} className="text-green-600 mt-0.5" />
+              <div>
+                <p className="font-semibold text-green-800">
+                  Situación controlada
+                </p>
+                <p className="text-sm text-green-700">
+                  No se registran casos que requieran atención inmediata.
+                </p>
+              </div>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {casosUrgentes.map((c) => (
+                <UrgentCaseCard
+                  key={c.id}
+                  title={c.conduct_category}
+                  student={getStudentName(c.students, '—')}
+                  date={c.incident_date}
+                  level={c.conduct_type}
+                />
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* ALERTAS DE PLAZOS (clic → Seguimiento) */}
+        <div className="bg-white rounded-xl shadow-sm p-4 sm:p-6">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="font-semibold text-gray-900">Alertas de Plazos</h2>
+            <div className="flex items-center gap-2"></div>
+          </div>
+
+          {topAlertas.length === 0 ? (
+            <div className="p-4 rounded-lg bg-gray-50 border text-sm text-gray-600">
+              No hay alertas activas.
+              <div className="text-xs text-gray-400 mt-1">
+                Revisión automática cada 24 horas
+              </div>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {topAlertas.map((a) => {
+                const casoId = a.case_id;
+                const disabled = !casoId;
+
+                const alertaTxt = a.alerta_urgencia || '';
+                const plazoKey = alertaTxt.startsWith('🔴')
+                  ? 'Vencidos'
+                  : alertaTxt.startsWith('🟠')
+                    ? 'Urgentes'
+                    : alertaTxt.startsWith('🟡')
+                      ? 'Próximos'
+                      : 'Próximos';
+
+                return (
+                  <div
+                    key={a.id}
+                    onClick={() => {
+                      if (disabled) return;
+                      navigate(`/seguimientos?caso=${casoId}`);
+                    }}
+                    className={`border rounded-lg p-3 transition ${
+                      disabled
+                        ? 'opacity-50 cursor-not-allowed'
+                        : 'cursor-pointer hover:bg-gray-50'
+                    }`}
+                    title={
+                      disabled
+                        ? 'Esta alerta no tiene un caso vinculado'
+                        : 'Abrir seguimiento'
+                    }
+                  >
+                    <div className="flex justify-between items-start gap-3">
+                      <div className="flex items-start gap-3 min-w-0">
+                        <span
+                          className="w-3 h-3 rounded-sm mt-1.5"
+                          style={{ background: PLAZOS_COLORS[plazoKey] }}
+                        />
+                        <div className="min-w-0">
+                          <p className="text-sm font-semibold text-gray-900 truncate">
+                            {a.etapa_debido_proceso || 'Etapa sin dato'}
+                          </p>
+                          <p className="text-xs text-gray-600 truncate">
+                            {a.estudiante
+                              ? `Estudiante: ${a.estudiante}`
+                              : `Responsable: ${a.responsable || '—'}`}
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="text-right shrink-0">
+                        <div className="text-xs font-semibold">
+                          {a.alerta_urgencia || '⏳'}
+                        </div>
+                        <div className="text-[11px] text-gray-500">
+                          {typeof a.dias_restantes === 'number'
+                            ? `${a.dias_restantes} días`
+                            : '—'}
+                          <div className="text-[11px] text-gray-400">
+                            {a.fecha_plazo ? formatDate(a.fecha_plazo) : ''}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+
+              <button
+                onClick={() => navigate('/alertas')}
+                className="text-sm text-red-600 hover:underline"
+              >
+                Ver todas las alertas →
+              </button>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}

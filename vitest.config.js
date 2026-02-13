@@ -18,14 +18,14 @@ export default defineConfig({
       include: ['src/**/*.{js,jsx,ts,tsx}'],
       exclude: [
         'src/**/*.test.{js,jsx,ts,tsx}',
-        'src/main.jsx',
-        'src/App.jsx',
+        'src/main.tsx',
+        'src/App.tsx',
       ],
     },
     // Configuración de globals
     globals: true,
     // Setup files
-    setupFiles: ['./src/test/setup.js'],
+    setupFiles: ['./src/test/setup.ts'],
     // Tiempo máximo por test
     timeout: 10000,
     // Pool de workers
